@@ -4,7 +4,8 @@ A check returns a dict with: id, status, score, tag, headline, details[],
 source_url, fetched_at. status is one of:
   "verified"          - a real source returned data (live mode only)
   "stub"              - simulated demo data, NOT a real finding
-  "could_not_verify"  - error, timeout, or no usable source
+  "no_reports"        - source read fine, nothing for this area (0 deduction)
+  "could_not_verify"  - only when the source failed, was blocked or timed out
 """
 
 from __future__ import annotations
@@ -52,3 +53,19 @@ def could_not_verify(check_id: str, reason: str) -> dict[str, Any]:
         "fetched_at": now_iso(),
     }
 
+
+
+def no_reports(
+    check_id: str, headline: str, details: list[str], source_url: str | None, tag: str = "None reported"
+) -> dict[str, Any]:
+    """The source was read fine but has nothing for this area: checked, 0 deduction."""
+    return {
+        "id": check_id,
+        "status": "no_reports",
+        "score": 100,
+        "tag": tag,
+        "headline": headline,
+        "details": details,
+        "source_url": source_url,
+        "fetched_at": now_iso(),
+    }

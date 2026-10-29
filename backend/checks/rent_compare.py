@@ -3,8 +3,10 @@ locality search pages via TinyFish Fetch (free); if Fetch yields too few
 comparables, one TinyFish agent run on the NoBroker page. Stub mode returns
 simulated demo data.
 
-Comparables are same-BHK listings whose locality names the same area. They are
-not adjusted for size or furnishing, so the "fair band" is the middle half
+Comparables are same-BHK listings whose locality names the same parent area.
+Outliers (below 50% or above 200% of the first-pass median) are dropped before
+the median, fair band and cheapest comparable are computed. Rents are not
+adjusted for size or furnishing, so the "fair band" is the middle half
 (25th-75th percentile) of what is listed, not a valuation.
 """
 
@@ -18,13 +20,14 @@ from typing import Any
 import scoring
 import tinyfish_client as tf
 from checks import datasets as ds
-from checks.base import could_not_verify, now_iso, stub_delay, stub_result
-from checks.notices import place_words
+from checks.base import could_not_verify, no_reports, now_iso, stub_delay, stub_result
+from checks.places import match_area, match_words
 from tinyfish_client import is_live_mode
 
 CHECK_ID = "rent_compare"
 
 MIN_COMPARABLES = 3
+OUTLIER_LOW, OUTLIER_HIGH = 0.5, 2.0  # keep rents within 50%-200% of the first-pass median
 RENT_MIN, RENT_MAX = 3000, 500000  # sanity bounds for a monthly rent in INR
 AGENT_MAX_SECONDS = 200
 
@@ -55,13 +58,6 @@ AGENT_SCHEMA = {
     },
     "required": ["listings"],
 }
-
-
-def area_name(locality: str) -> str:
-    """Broadest named part without sector/block numbers: '..., HSR Layout Sector 7, Bengaluru' -> 'HSR Layout'."""
-    parts = [p for p in locality.split(",") if ds.place_words(p)]
-    name = parts[-1] if parts else locality
-    return re.sub(r"\b(\d+(st|nd|rd|th)?\s+)?(sector|block|stage|phase)\b(\s+\d+)?", "", name, flags=re.I).strip()
 
 
 def portal_urls(area: str, bhk: int) -> dict[str, str]:
@@ -130,9 +126,20 @@ def keep(comps: list[dict[str, Any]], words: list[str], own_url: str | None) -> 
     ]
 
 
-async def fetch_comparables(urls: dict[str, str], bhk: int) -> tuple[list[dict[str, Any]], list[str]]:
+def drop_outliers(comps: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """(kept, dropped): rents outside 50%-200% of the first-pass median."""
+    if not comps:
+        return [], []
+    median = statistics.median(c["rent"] for c in comps)
+    kept = [c for c in comps if OUTLIER_LOW * median <= c["rent"] <= OUTLIER_HIGH * median]
+    return kept, [c for c in comps if c not in kept]
+
+
+async def fetch_comparables(urls: dict[str, str], bhk: int) -> tuple[list[dict[str, Any]], list[str], int]:
+    """(comparables, notes, pages_read)."""
     results, errors = await tf.fetch(list(urls.values()), format="markdown", links=True, per_url_timeout_ms=40000)
     notes = [f"{e.get('url')}: {e.get('error')}" for e in errors]
+    pages_read = sum(1 for r in results if r.get("text"))
     comps: list[dict[str, Any]] = []
     for r in results:
         text = r.get("text") if isinstance(r.get("text"), str) else ""
@@ -141,7 +148,7 @@ async def fetch_comparables(urls: dict[str, str], bhk: int) -> tuple[list[dict[s
             comps += parse_nobroker(links, bhk)
         elif r["url"] == urls["MagicBricks"]:
             comps += parse_magicbricks(text, links, bhk, r["url"])
-    return comps, notes
+    return comps, notes, pages_read
 
 
 async def agent_comparables(url: str, area: str, bhk: int) -> list[dict[str, Any]]:
@@ -211,15 +218,16 @@ async def check_rent(listing: dict[str, Any]) -> dict[str, Any]:
     rent, bhk = listing.get("rent"), listing.get("bhk")
     if not rent or not bhk:
         return could_not_verify(CHECK_ID, "The listing's rent and BHK are needed to compare rents.")
-    area = area_name(listing.get("locality") or "")
-    words = place_words(listing.get("locality") or "")
+    area = match_area(listing.get("locality") or "")
+    words = match_words(listing.get("locality") or "")
     if not area or not words:
         return could_not_verify(CHECK_ID, "Could not pick an area name out of the locality.")
     urls = portal_urls(area, bhk)
 
     notes: list[str] = []
+    pages_read = 0
     try:
-        comps, notes = await fetch_comparables(urls, bhk)
+        comps, notes, pages_read = await fetch_comparables(urls, bhk)
     except tf.TinyFishError as exc:
         comps, notes = [], [str(exc)]
     comps = keep(comps, words, listing.get("listing_url"))
@@ -229,16 +237,25 @@ async def check_rent(listing: dict[str, Any]) -> dict[str, Any]:
             agent = keep(await agent_comparables(urls["NoBroker"], area, bhk), words, listing.get("listing_url"))
             seen = {c["source_url"] for c in comps}
             comps += [c for c in agent if c["source_url"] not in seen]
+            pages_read += 1
             method = "TinyFish Fetch + agent"
         except (tf.TinyFishError, asyncio.TimeoutError) as exc:
             notes.append(f"Agent fallback failed: {str(exc)[:120]}")
+    comps, outliers = drop_outliers(comps)
     if len(comps) < MIN_COMPARABLES:
-        result = could_not_verify(
-            CHECK_ID, f"Only {len(comps)} comparable {bhk} BHK listings found for {area}; need {MIN_COMPARABLES}."
-        )
+        reason = f"Only {len(comps)} comparable {bhk} BHK listings found for {area}; need {MIN_COMPARABLES}."
+        if pages_read:
+            return no_reports(
+                CHECK_ID, f"Too few comparable {bhk} BHK listings in {area} to judge the rent",
+                [reason, *notes], urls["NoBroker"], tag="Too few listings",
+            )
+        result = could_not_verify(CHECK_ID, reason)
         result["details"] += notes
         result["source_url"] = urls["NoBroker"]
         return result
+    if outliers:
+        notes.insert(0, f"Dropped {len(outliers)} outlier listings outside 50%-200% of the median "
+                        f"(₹{', ₹'.join(f'{c['rent']:,}' for c in sorted(outliers, key=lambda c: c['rent']))}).")
 
     rc = build_rent_compare(rent, bhk, comps, urls)
     premium = rc["premium_percent"]

@@ -24,7 +24,7 @@ load_dotenv()
 
 from checks import ALL_CHECKS  # noqa: E402  (after load_dotenv so env is set)
 from checks.base import could_not_verify, now_iso  # noqa: E402
-from scoring import AREA_LABELS, level_for, score_report  # noqa: E402
+from scoring import AREA_LABELS, checked_count, level_for, score_report, unverified_labels  # noqa: E402
 from summary import build_owner_questions, build_summary, generate_summary  # noqa: E402
 from tinyfish_client import is_live_mode  # noqa: E402
 
@@ -128,6 +128,10 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         "listing": scan.listing,
         "score": score,
         "verdict": verdict,
+        # Checks that were read (verified/no_reports) vs not; the UI lists the unverified ones
+        # instead of a score when fewer than scoring.MIN_CHECKED_AREAS were checked.
+        "checked_count": checked_count(area_scores),
+        "unverified_checks": unverified_labels(area_scores),
         "summary": build_summary(checks),
         "sources_count": len(sourced),
         "sources": [],

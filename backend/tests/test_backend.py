@@ -54,16 +54,26 @@ def test_sample_report_scores_58():
     assert report["verdict"] == "Check before signing"
 
 
-def test_unverified_areas_are_excluded():
+def test_check_states_and_minimum_checked():
     areas = [
-        {"id": "power_cuts", "score": 80, "status": "verified"},  # 20% of 20 = 4 points
-        {"id": "water_source", "score": None, "status": "could_not_verify"},
+        {"id": "power_cuts", "label": "Power", "score": 80, "status": "verified"},  # 20% of 20 = 4 points
+        {"id": "water_cuts", "label": "Water supply", "score": 100, "status": "no_reports"},  # checked, 0 points
+        {"id": "water_source", "label": "Water source", "score": None, "status": "could_not_verify"},
     ]
     assert scoring.overall_score(areas) == 96
-    assert scoring.score_report([{"id": "power_cuts", "score": None, "status": "could_not_verify"}]) == (
-        None,
-        "Not enough data",
-    )
+    assert scoring.unverified_labels(areas) == ["Water source"]
+    # Only one checked area -> no score, "Not enough verified data".
+    one = [areas[0], areas[2]]
+    assert scoring.score_report(one) == (None, "Not enough verified data")
+    assert scoring.score_report([{"id": "power_cuts", "score": None, "status": "could_not_verify"}])[0] is None
+
+
+def test_notice_windows_weighting():
+    # Last 30 days full weight, 1-12 months half weight, handoff caps.
+    assert scoring.water_cuts_deduction(1, 0) == 5
+    assert scoring.water_cuts_deduction(0, 2) == 5
+    assert scoring.water_cuts_deduction(4, 4) == 25
+    assert scoring.power_cuts_deduction(0, 4) == 6
 
 
 def test_timeout_and_error_become_could_not_verify(monkeypatch):
@@ -157,8 +167,13 @@ def test_flooding_matches_official_ward():
     assert hsr7["score"] == scoring.area_score("flooding", scoring.flooding_deduction(True, 0))
     hsr2 = check_flooding({"locality": "HSR Layout Sector 2, Bengaluru"})
     assert hsr2["score"] < hsr7["score"]  # sector 2 has its own listed spot
-    assert check_flooding({"locality": "Banashankari, Bengaluru"})["status"] == "could_not_verify"
-    assert check_flooding({"locality": "Mahadevapura"})["status"] == "could_not_verify"  # zone only
+    # Dataset read fine, nothing listed for the ward -> no_reports (0 deduction), never could_not_verify.
+    bsk = check_flooding({"locality": "Banashankari, Bengaluru"})
+    assert bsk["status"] == "no_reports" and bsk["score"] == 100
+    mdp = check_flooding({"locality": "Mahadevapura"})
+    assert mdp["status"] == "no_reports" and any("zone" in d for d in mdp["details"])
+    sub = check_flooding({"locality": "Rajiv Gandhi Nagar, 7th Sector, Somasundarapalya"})
+    assert sub["status"] == "verified"  # sub-area normalised to HSR Layout
 
 
 def test_water_source_uses_listing_text_only():
@@ -166,7 +181,9 @@ def test_water_source_uses_listing_text_only():
 
     url = "https://www.nobroker.in/property/x"
     none = check_water_source({"locality": "HSR Layout Sector 7", "listing_text": "2 BHK, lift", "listing_url": url})
-    assert none["status"] == "could_not_verify" and "Area-level context only" in none["details"][-1]
+    assert none["status"] == "no_reports" and "Area-level context only" in none["details"][-1]
+    unread = check_water_source({"locality": "x", "listing_url": url}, "")
+    assert unread["status"] == "could_not_verify"
     bore = check_water_source({"locality": "x", "listing_text": "borewell water 24x7", "listing_url": url})
     assert bore["status"] == "verified" and bore["score"] == 0 and bore["source_url"] == url
     cauvery = check_water_source({"locality": "x", "listing_text": "Cauvery and borewell", "listing_url": url})
@@ -220,7 +237,12 @@ def test_water_source_reads_nobroker_field():
 def test_rent_compare_parsing_and_stats():
     from checks import rent_compare as rc
 
-    assert rc.area_name("Rajiv Gandhi Nagar, HSR Layout Sector 7, Bengaluru") == "HSR Layout"
+    from checks.places import match_area
+
+    assert match_area("Rajiv Gandhi Nagar, HSR Layout Sector 7, Bengaluru") == "HSR Layout"
+    assert match_area("Rajiv Gandhi Nagar, 7th Sector, HSR Layout, Bangalore") == "HSR Layout"
+    kept, dropped = rc.drop_outliers([{"rent": r} for r in (14000, 40000, 44000, 50000, 120000)])
+    assert [c["rent"] for c in dropped] == [14000, 120000]
     urls = rc.portal_urls("HSR Layout", 2)
     assert urls["NoBroker"].endswith("/2bhk-flats-for-rent-in-hsr_layout_bangalore")
     links = [
@@ -239,3 +261,34 @@ def test_rent_compare_parsing_and_stats():
     out = rc.build_rent_compare(30000, 2, kept + [dict(kept[0], rent=32000, source_url="u3")], urls)
     assert out["median"] == 28000 and out["premium_percent"] == 7.1 and out["monthly_extra"] == 2000
     assert out["cheapest_comparable"]["rent"] == 22000 and out["spread"]["n"] == 3
+
+
+def test_official_notice_table_and_events():
+    from datetime import date
+
+    from checks import notices as nt
+
+    page = """<table>
+    <tr><th>Sl</th><th>Description</th><th>Date</th><th>Doc</th></tr>
+    <tr><td>1</td><td>Water Shutdown on 31-07-2026.</td><td>27.07.2026</td><td><a href="/uploads/a.pdf">Download</a></td></tr>
+    <tr><td>2</td><td>JULY 2026</td><td>Contingency Power Outages details</td><td></td></tr>
+    <tr><td>3</td><td>Old notice</td><td>2021-06-16</td><td></td></tr>
+    </table>"""
+    rows = nt.parse_notice_table(page, "https://bwssb.karnataka.gov.in/109/Press-Release/en")
+    assert [r["date"] for r in rows] == ["2026-07-31", "2026-07-01", "2021-06-16"]
+    assert rows[0]["urls"] == ["https://bwssb.karnataka.gov.in/uploads/a.pdf"]
+    assert "JULY 2026" in rows[1]["title"]
+    assert nt.date_in_text("FY 2025-26 details") == date(2026, 3, 31)
+
+    since = date(2025, 10, 30)
+    data = {"url": "https://x", "notices": [
+        {"title": "Shutdown", "date": "2026-07-31", "urls": ["https://x/a.pdf"],
+         "documents": [{"url": "https://x/a.pdf", "readable": True,
+                        "events": [{"date": "2026-07-31", "areas": ["H.S.R. Layout", "Agara"]}]}]},
+        {"title": "Shutdown 2", "date": "2026-07-22", "urls": ["https://x/b.jpg"],
+         "documents": [{"url": "https://x/b.jpg", "readable": False, "events": []}]},
+    ]}
+    events, unreadable = nt.official_events(data, ["hsr"], since)
+    assert [e["date"] for e in events] == ["2026-07-31"] and events[0]["source_url"] == "https://x/a.pdf"
+    assert [n["title"] for n in unreadable] == ["Shutdown 2"]
+    assert nt.official_events(data, ["banashankari"], since)[0] == []

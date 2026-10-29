@@ -8,7 +8,8 @@ from typing import Any
 
 import scoring
 from checks import datasets as ds
-from checks.base import could_not_verify, now_iso, stub_delay, stub_result
+from checks.base import no_reports, now_iso, stub_delay, stub_result
+from checks.places import parent_area
 from tinyfish_client import is_live_mode
 
 CHECK_ID = "flooding"
@@ -16,7 +17,7 @@ CHECK_ID = "flooding"
 
 def match_flood_points(locality: str) -> tuple[list[dict], list[dict], list[dict]]:
     """Return (ward_points, locality_points, zone_points) for a locality string."""
-    loc = ds.norm(locality)
+    loc = ds.norm(f"{locality} {parent_area(locality) or ''}")
     points = ds.flood_points()
     ward_points = [p for p in points if p["ward"] and ds.norm(p["ward"]) in loc]
     zone_points = [p for p in points if p["zone"] and ds.norm(p["zone"]) in loc] if not ward_points else []
@@ -39,15 +40,23 @@ def check_flooding(listing: dict[str, Any]) -> dict[str, Any]:
     dated = f"dataset updated {ds.FLOOD_DATASET_DATE}; lists vulnerable spots, not dated incidents"
 
     if not ward_points:
-        reason = (
-            f"'{locality}' maps only to the {zone_points[0]['zone']} zone ({len(zone_points)} vulnerable points "
-            "across the zone), not to a specific ward."
-            if zone_points
-            else f"'{locality}' did not match any ward name in the official flood-vulnerable list."
+        # The dataset was read fine; it just lists nothing for this ward.
+        details = [
+            f"No flood-vulnerable spot listed for '{locality}' in the official list. "
+            "The list uses old BBMP ward names, so a renamed ward may be missed."
+        ]
+        if zone_points:
+            details.append(
+                f"Context: the wider {zone_points[0]['zone']} zone has {len(zone_points)} listed spots in other wards."
+            )
+        details.append(f"Source: {ds.FLOOD_DATASET_LABEL}, {dated}.")
+        return no_reports(
+            CHECK_ID,
+            f"No official flood-vulnerable spot listed for this ward (as of {ds.FLOOD_DATASET_DATE})",
+            details,
+            ds.FLOOD_DATASET_URL,
+            tag="None listed",
         )
-        result = could_not_verify(CHECK_ID, reason + f" Source: {ds.FLOOD_DATASET_LABEL}, {dated}.")
-        result["source_url"] = ds.FLOOD_DATASET_URL
-        return result
 
     ward = ward_points[0]["ward"]
     deduction = scoring.flooding_deduction(True, len(locality_points))

@@ -17,7 +17,7 @@ CHECK_ID = "water_cuts"
 async def run(listing: dict[str, Any]) -> dict[str, Any]:
     if is_live_mode():
         return await run_notices_check(
-            CHECK_ID, "bwssb", listing, scoring.water_cuts_deduction, scoring.area_score, "water supply cut report"
+            CHECK_ID, "bwssb", listing, scoring.water_cuts_deduction, scoring.area_score, "water cut"
         )
     await stub_delay()
     return stub_result(

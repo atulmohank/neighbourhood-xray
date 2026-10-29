@@ -1,7 +1,17 @@
 """Scoring and verdict logic (handoff v2 rule).
 
-Start at 100 and subtract a capped deduction per area. A check with status
-``could_not_verify`` never deducts anything and is shown greyed out.
+Start at 100 and subtract a capped deduction per area.
+
+Check states:
+* ``verified``: findings exist (each with a date and source_url); may deduct.
+* ``no_reports``: the source was read fine but has nothing for this area;
+  counts as checked, deducts 0.
+* ``could_not_verify``: only when the source failed, was blocked or timed out;
+  never deducts and is shown greyed out.
+* ``stub``: simulated demo data (stub mode only).
+
+If fewer than MIN_CHECKED_AREAS checks are verified or no_reports, the report
+shows "Not enough verified data" instead of a score.
 
 Per-area score (shown in the UI) = 100 - deduction / max_deduction * 100,
 so an area with no problems scores 100 and one at its cap scores 0.
@@ -34,6 +44,7 @@ MAX_DEDUCTIONS: dict[str, int] = {
 # How findings turn into deductions (our own calibration; the handoff only fixes the caps).
 WATER_CUT_POINTS_PER_NOTICE = 5  # 5 sourced water-cut notices in 30 days hit the cap
 POWER_CUT_POINTS_PER_NOTICE = 3  # 7 sourced outage notices hit the cap
+OLDER_NOTICE_WEIGHT = 0.5  # notices 1-12 months old count half; last 30 days count fully
 FLOOD_POINTS_WARD_LISTED = 10  # ward appears in the official vulnerable-locations list
 FLOOD_POINTS_PER_LOCALITY_MATCH = 5  # each vulnerable point whose name matches the locality
 RENT_POINTS_PER_PERCENT_ABOVE = 1  # 1 point per % above the median
@@ -48,14 +59,16 @@ AREA_LABELS: dict[str, str] = {
 
 # Statuses whose result may deduct. "stub" results are simulated demo data:
 # they are scored so the demo flow works, but the report says data_mode="stub".
-SCORABLE_STATUSES = {"verified", "stub"}
+SCORABLE_STATUSES = {"verified", "no_reports", "stub"}
+CHECKED_STATUSES = SCORABLE_STATUSES  # "checked" = the source was read
+MIN_CHECKED_AREAS = 2
 
 VERDICT_GOOD_MIN = 75
 VERDICT_CHECK_MIN = 50
 VERDICT_GOOD = "Looks good"
 VERDICT_CHECK = "Check before signing"
 VERDICT_RISK = "High risk"
-NO_DATA_VERDICT = "Not enough data"
+NO_DATA_VERDICT = "Not enough verified data"
 
 # Area colour levels for the UI (per-area score).
 LEVEL_GOOD_MIN = 70
@@ -66,12 +79,13 @@ def capped(area_id: str, points: float) -> float:
     return max(0.0, min(float(MAX_DEDUCTIONS[area_id]), points))
 
 
-def water_cuts_deduction(notice_count: int) -> float:
-    return capped("water_cuts", notice_count * WATER_CUT_POINTS_PER_NOTICE)
+def water_cuts_deduction(recent: int, older: int = 0) -> float:
+    """recent = cuts in the last 30 days, older = cuts 1-12 months ago (half weight)."""
+    return capped("water_cuts", (recent + older * OLDER_NOTICE_WEIGHT) * WATER_CUT_POINTS_PER_NOTICE)
 
 
-def power_cuts_deduction(notice_count: int) -> float:
-    return capped("power_cuts", notice_count * POWER_CUT_POINTS_PER_NOTICE)
+def power_cuts_deduction(recent: int, older: int = 0) -> float:
+    return capped("power_cuts", (recent + older * OLDER_NOTICE_WEIGHT) * POWER_CUT_POINTS_PER_NOTICE)
 
 
 def flooding_deduction(ward_listed: bool, locality_matches: int) -> float:
@@ -110,9 +124,17 @@ def level_for(score: int | None) -> str:
     return "risk"
 
 
+def checked_count(area_scores: list[dict[str, Any]]) -> int:
+    return sum(a.get("status") in CHECKED_STATUSES and a.get("score") is not None for a in area_scores)
+
+
+def unverified_labels(area_scores: list[dict[str, Any]]) -> list[str]:
+    return [a.get("label") or a["id"] for a in area_scores if a.get("status") not in CHECKED_STATUSES]
+
+
 def overall_score(area_scores: list[dict[str, Any]]) -> int | None:
-    """None when no area could be checked: 100 would wrongly read as "Looks good"."""
-    if not any(a.get("status") in SCORABLE_STATUSES and a.get("score") is not None for a in area_scores):
+    """None when too few areas were checked: 100 would wrongly read as "Looks good"."""
+    if checked_count(area_scores) < MIN_CHECKED_AREAS:
         return None
     total = sum(area_deduction(a) for a in area_scores)
     # Round half up (Python's round() uses banker's rounding).

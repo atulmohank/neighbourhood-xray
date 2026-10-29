@@ -1,7 +1,8 @@
 """water_source check. Live mode reads the listing text; the BWSSB Cauvery
 stage dataset is area-level context only. A building's actual source can't be
 checked against any public record, so without a statement in the listing the
-result is could_not_verify (and summary.py turns it into an owner question).
+result is no_reports when the listing was read but says nothing (summary.py
+turns it into an owner question), and could_not_verify only if it couldn't be read.
 Stub mode deliberately fails, to demonstrate could_not_verify."""
 
 from __future__ import annotations
@@ -11,7 +12,8 @@ from typing import Any
 
 import scoring
 from checks import datasets as ds
-from checks.base import could_not_verify, now_iso, stub_delay
+from checks.base import could_not_verify, no_reports, now_iso, stub_delay
+from checks.places import match_words
 import tinyfish_client as tf
 from tinyfish_client import is_live_mode
 
@@ -25,10 +27,9 @@ PRIVATE_RE = re.compile(r"\b(bore\s?well|tankers?)\b", re.I)
 
 
 def cauvery_context(locality: str) -> str | None:
-    named = [set(ds.place_words(p)) for p in locality.split(",") if ds.place_words(p)]
-    if not named:
+    words = set(match_words(locality))
+    if not words:
         return None
-    words = named[-1]  # broadest named area, as in checks/notices.py
     for stage, area in ds.cauvery_areas():
         if words <= set(ds.place_words(area)):
             return (
@@ -86,13 +87,20 @@ def check_water_source(listing: dict[str, Any], text: str | None = None) -> dict
             "fetched_at": now_iso(),
         }
 
-    reason = "The listing does not say where the water comes from."
-    if not url:
-        reason = "No listing text/URL was provided to check the water source."
-    result = could_not_verify(CHECK_ID, reason)
+    if url and text:
+        # The listing was read fine but doesn't say: checked, nothing to deduct, ask the owner.
+        details = ["The listing does not say where the water comes from."]
+        if context:
+            details.append(context)
+        return no_reports(
+            CHECK_ID, "Listing doesn't say where the water comes from", details, url, tag="Not stated"
+        )
+    result = could_not_verify(
+        CHECK_ID,
+        "Could not read the listing page." if url else "No listing URL or text was provided.",
+    )
     if context:
         result["details"].append(context)
-        result["source_url"] = ds.CAUVERY_DATASET_URL
     return result
 
 

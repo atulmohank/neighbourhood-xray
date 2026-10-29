@@ -111,6 +111,7 @@ main { padding: 12px 12px 24px; display: flex; flex-direction: column; gap: 10px
 .dot.st-verified { background: var(--good); }
 .dot.st-stub { background: var(--watch); }
 .dot.st-could_not_verify { background: var(--mute); }
+.dot.st-no_reports { background: var(--good); opacity: .55; }
 @keyframes pulse { to { opacity: .3; } }
 
 /* chips */
@@ -125,6 +126,7 @@ main { padding: 12px 12px 24px; display: flex; flex-direction: column; gap: 10px
 .status-verified { background: #E5EEE7; color: var(--good); }
 .status-stub { background: #FBF3E3; color: var(--watch); border: 1px dashed var(--watch); }
 .status-could_not_verify { background: #EFEBE3; color: var(--mute); }
+.status-no_reports { background: #EEF3EF; color: var(--good); border: 1px solid #CFDDD2; }
 
 /* hero */
 .hero { background: linear-gradient(160deg, #FBF1DD, var(--card) 60%); border-color: #EBDDBF; }

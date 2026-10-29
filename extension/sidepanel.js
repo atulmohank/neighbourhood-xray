@@ -33,7 +33,7 @@ function sourceLink(url, label) {
   return h("a", { class: "src mono", href, target: "_blank", rel: "noopener noreferrer" }, (label || "source") + " ↗");
 }
 
-const STATUS_TEXT = { verified: "Verified", stub: "Demo", could_not_verify: "Could not verify" };
+const STATUS_TEXT = { verified: "Verified", no_reports: "No reports", stub: "Demo", could_not_verify: "Could not verify" };
 
 function statusChip(status) {
   return h("span", { class: `chip status-${status}` }, STATUS_TEXT[status] || status);
@@ -106,6 +106,10 @@ function renderOverview(r) {
         scoreRing(r.score),
         h("div", {},
           h("span", { class: `verdict verdict-${level}` }, (level === "good" ? "✓ " : "⚠ ") + (r.verdict || "")),
+          // No score: say which checks could not be verified instead of implying a verdict.
+          r.score == null && (r.unverified_checks || []).length
+            ? h("p", { class: "summary" }, "Not verified: ", h("b", {}, r.unverified_checks.join(", ")), ".")
+            : null,
           h("p", { class: "summary" }, r.summary || "")
         )
       ),
@@ -135,7 +139,7 @@ function renderOverview(r) {
           h("div", { class: "area-row" },
             h("span", { class: "area-label" }, a.label),
             h("span", { class: "area-right" },
-              a.status === "stub" ? statusChip("stub") : null,
+              a.status === "stub" || a.status === "no_reports" ? statusChip(a.status) : null,
               h("span", { class: `chip lvl-${lvl}` }, a.tag || STATUS_TEXT[a.status] || ""),
               h("span", { class: "mono area-score" }, a.score == null ? "n/a" : [a.score, h("span", { class: "muted" }, "/100")])
             )

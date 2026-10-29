@@ -17,7 +17,7 @@ CHECK_ID = "power_cuts"
 async def run(listing: dict[str, Any]) -> dict[str, Any]:
     if is_live_mode():
         return await run_notices_check(
-            CHECK_ID, "bescom", listing, scoring.power_cuts_deduction, scoring.area_score, "power cut report"
+            CHECK_ID, "bescom", listing, scoring.power_cuts_deduction, scoring.area_score, "power cut"
         )
     await stub_delay()
     return stub_result(
