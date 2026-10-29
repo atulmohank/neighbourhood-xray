@@ -135,7 +135,7 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         "checks": checks,
         "good": good,
         "watch_out": watch_out,
-        "rent_compare": {
+        "rent_compare": next((r["rent_compare"] for r in results if "rent_compare" in r), None) or {
             "status": "could_not_verify",
             "currency": "INR",
             "listing_rent": scan.listing.get("rent"),

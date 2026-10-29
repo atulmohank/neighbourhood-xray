@@ -215,3 +215,27 @@ def test_water_source_reads_nobroker_field():
     assert corp["status"] == "verified" and corp["score"] == 100
     bore = check_water_source({"locality": "x", "listing_url": url}, "##### Water Supply ##### Borewell #####")
     assert bore["status"] == "verified" and bore["score"] == 0
+
+
+def test_rent_compare_parsing_and_stats():
+    from checks import rent_compare as rc
+
+    assert rc.area_name("Rajiv Gandhi Nagar, HSR Layout Sector 7, Bengaluru") == "HSR Layout"
+    urls = rc.portal_urls("HSR Layout", 2)
+    assert urls["NoBroker"].endswith("/2bhk-flats-for-rent-in-hsr_layout_bangalore")
+    links = [
+        "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-sector-7-bangalore-for-rs-22000/aa11/detail",
+        "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-sector-7-bangalore-for-rs-22000/aa11/detail",
+        "https://www.nobroker.in/property/3-bhk-apartment-for-rent-in-hsr-layout-bangalore-for-rs-60000/bb22/detail",
+        "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-junnasandra-bangalore-for-rs-37000/cc33/detail",
+    ]
+    nb = rc.parse_nobroker(links, 2)
+    assert [c["rent"] for c in nb] == [22000, 37000]
+    md = "## 2 BHK Flat for Rent in HSR Layout, Bangalore\n\nSuper Area\n\n1286 sqft\n\n₹28,000\n\nSecurity Deposit\n"
+    mb = rc.parse_magicbricks(md, ["https://www.magicbricks.com/propertyDetails/2-BHK-1286-Sq-ft-X&id=1"], 2, "https://mb")
+    assert mb[0]["rent"] == 28000 and mb[0]["source_url"].endswith("&id=1")
+    kept = rc.keep(nb + mb, ["hsr"], None)
+    assert sorted(c["rent"] for c in kept) == [22000, 28000]  # Junnasandra dropped
+    out = rc.build_rent_compare(30000, 2, kept + [dict(kept[0], rent=32000, source_url="u3")], urls)
+    assert out["median"] == 28000 and out["premium_percent"] == 7.1 and out["monthly_extra"] == 2000
+    assert out["cheapest_comparable"]["rent"] == 22000 and out["spread"]["n"] == 3

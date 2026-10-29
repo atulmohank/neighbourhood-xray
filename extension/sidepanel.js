@@ -324,15 +324,20 @@ function setProgress(done, total, label) {
   if (label) $("progress-label").textContent = label;
 }
 
+function setBusy(busy) {
+  $("btn-scan").disabled = busy;
+  $("btn-replay").disabled = busy;
+}
+
 function showError(msg) {
   const e = $("scan-error");
   e.textContent = msg;
   e.classList.toggle("hidden", !msg);
 }
 
-async function startScan() {
+async function startScan(demo = false) {
   showError("");
-  const locality = $("in-locality").value.trim();
+  const locality = $("in-locality").value.trim() || (demo ? "latest" : "");
   if (locality.length < 2) {
     showError("Please enter a locality.");
     $("in-locality").focus();
@@ -345,19 +350,20 @@ async function startScan() {
   const body = { locality, rent: num("in-rent"), bhk: num("in-bhk"), listing_url: window.__listingUrl || null, source: window.__listingUrl ? "nobroker" : "manual" };
 
   if (source) source.close();
-  $("btn-scan").disabled = true;
+  setBusy(true);
   $("progress-list").replaceChildren();
-  setProgress(0, 0, "Starting scan…");
+  setProgress(0, 0, demo ? "Loading cached scan…" : "Starting scan…");
 
   let scanId;
   try {
-    const res = await fetch(`${BACKEND}/scan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const res = await fetch(`${BACKEND}/scan${demo ? "?demo=1" : ""}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (demo && res.status === 404) throw new Error("no cached scan saved yet — run a live scan first");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     scanId = (await res.json()).scan_id;
   } catch (err) {
-    $("btn-scan").disabled = false;
+    setBusy(false);
     $("progress").classList.add("hidden");
-    showError(`Could not reach the backend at ${BACKEND} (${err.message}). Is it running?`);
+    showError(err.message.startsWith("no cached") ? `Replay failed: ${err.message}.` : `Could not reach the backend at ${BACKEND} (${err.message}). Is it running?`);
     return;
   }
 
@@ -380,14 +386,14 @@ async function startScan() {
   source.addEventListener("done", () => {
     source.close();
     source = null;
-    $("btn-scan").disabled = false;
-    setProgress(total, total, "Scan complete");
+    setBusy(false);
+    setProgress(total, total, demo ? "Cached scan replayed" : "Scan complete");
   });
   source.onerror = () => {
     if (!source) return;
     source.close();
     source = null;
-    $("btn-scan").disabled = false;
+    setBusy(false);
     showError("Lost connection to the scan stream.");
   };
 }
@@ -397,7 +403,8 @@ async function showExample() {
   render(report);
 }
 
-$("btn-scan").addEventListener("click", startScan);
+$("btn-scan").addEventListener("click", () => startScan(false));
+$("btn-replay").addEventListener("click", () => startScan(true));
 $("btn-example").addEventListener("click", showExample);
 
 showExample().catch((err) => showError(`Could not load example data: ${err.message}`));

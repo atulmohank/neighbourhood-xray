@@ -1,0 +1,214 @@
+{
+  "schema_version": "0.1.0",
+  "data_mode": "live",
+  "disclaimer": "",
+  "scan_id": "07f5b82e4881",
+  "generated_at": "2026-10-29T17:45:16Z",
+  "duration_seconds": 22.5,
+  "listing": {
+    "locality": "HSR Layout Sector 2, Bengaluru",
+    "rent": 45000,
+    "bhk": 2,
+    "listing_url": "https://www.magicbricks.com/propertyDetails/2-BHK-1198-Sq-ft-Multistorey-Apartment-FOR-Rent-HSR-Layout-Sector-2-in-Bangalore&id=4d423837313336343733",
+    "listing_text": null,
+    "source": "magicbricks"
+  },
+  "score": 83,
+  "verdict": "Looks good",
+  "summary": "HSR Layout Sector 2 scores 83 and “Looks good.” Flood‑vulnerability is verified with four official spots in the ward, and the ₹45,000 rent is 2 % above the ₹44,000 median for 2 BHKs. Water cuts, power cuts and the water source could not be verified.",
+  "sources_count": 5,
+  "sources": [],
+  "area_scores": [
+    {
+      "id": "water_cuts",
+      "label": "Water supply",
+      "score": null,
+      "level": "unknown",
+      "tag": "Could not verify",
+      "status": "could_not_verify"
+    },
+    {
+      "id": "power_cuts",
+      "label": "Power",
+      "score": null,
+      "level": "unknown",
+      "tag": "Could not verify",
+      "status": "could_not_verify"
+    },
+    {
+      "id": "flooding",
+      "label": "Flood risk",
+      "score": 40,
+      "level": "watch",
+      "tag": "4 official flood spots",
+      "status": "verified"
+    },
+    {
+      "id": "rent_compare",
+      "label": "Rent value",
+      "score": 89,
+      "level": "good",
+      "tag": "+2% vs median",
+      "status": "verified"
+    },
+    {
+      "id": "water_source",
+      "label": "Water source",
+      "score": null,
+      "level": "unknown",
+      "tag": "Could not verify",
+      "status": "could_not_verify"
+    }
+  ],
+  "checks": [
+    {
+      "id": "water_cuts",
+      "status": "could_not_verify",
+      "headline": "Could not verify water cuts",
+      "details": [
+        "No official BWSSB notice naming HSR since 2026-09-29 (latest notice on the page: 2026-07-27).",
+        "No news report naming HSR since 2026-09-29 (1 articles checked)."
+      ],
+      "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en",
+      "fetched_at": "2026-10-29T17:45:01Z"
+    },
+    {
+      "id": "power_cuts",
+      "status": "could_not_verify",
+      "headline": "Could not verify power cuts",
+      "details": [
+        "No official BESCOM notice naming HSR since 2026-09-29 (latest notice on the page: JULY 2026).",
+        "No news report naming HSR since 2026-09-29 (2 articles checked)."
+      ],
+      "source_url": "https://bescom.karnataka.gov.in/421/Contingency-Power-Outages/en",
+      "fetched_at": "2026-10-29T17:45:00Z"
+    },
+    {
+      "id": "flooding",
+      "status": "verified",
+      "headline": "HSR Layout ward has 4 officially flood-vulnerable spots (as of 27 Nov 2025)",
+      "details": [
+        "Matches this part of the ward: HSR sector 2 Garden layout",
+        "HSR sector 2 Garden layout (ward HSR Layout)",
+        "HSR 3rd sector lead off drains (ward HSR Layout)",
+        "Sector 6 lead off drains surrounding 5th and 9th main (ward HSR Layout)",
+        "HSR layout 9th and 5th main (ward HSR Layout)",
+        "Source: BBMP/KSRSAC flood-vulnerable locations (OpenCity), dataset updated 27 Nov 2025; lists vulnerable spots, not dated incidents."
+      ],
+      "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban",
+      "fetched_at": "2026-10-29T17:44:53Z"
+    },
+    {
+      "id": "rent_compare",
+      "status": "verified",
+      "headline": "Rent ₹45,000 is 2% above the ₹44,000 median for 2 BHK in HSR Layout (46 listings, NoBroker + MagicBricks)",
+      "details": [
+        "Middle half of listed rents: ₹32,250–₹55,000; range ₹14,000–₹70,000.",
+        "NoBroker: median ₹33,000 across 17 listings (https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore)",
+        "MagicBricks: median ₹50,000 across 29 listings (https://www.magicbricks.com/2-bhk-flats-for-rent-in-hsr-layout-bangalore-pppfr)",
+        "Cheapest comparable: ₹14,000 in Hsr Layout (https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-bangalore-for-rs-14000/8aa99a8ea11992b801a11a4ca8af7715/detail)",
+        "Listings as advertised today via TinyFish Fetch; not adjusted for size or furnishing."
+      ],
+      "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore",
+      "fetched_at": "2026-10-29T17:45:00Z"
+    },
+    {
+      "id": "water_source",
+      "status": "could_not_verify",
+      "headline": "Could not verify water source",
+      "details": [
+        "The listing does not say where the water comes from.",
+        "Area-level context only: 'HSR Sector 1st to 7th sector' is listed under BWSSB Cauvery Stage 4 Ph 1 (OpenCity dataset updated 27 Nov 2025). This does not show that this building is connected or that supply is adequate."
+      ],
+      "source_url": "https://data.opencity.in/dataset/bwssb-stage-wise-cauvery-water-supply-areas",
+      "fetched_at": "2026-10-29T17:45:16Z"
+    }
+  ],
+  "good": [
+    {
+      "text": "Rent ₹45,000 is 2% above the ₹44,000 median for 2 BHK in HSR Layout (46 listings, NoBroker + MagicBricks)",
+      "source_label": null,
+      "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore"
+    }
+  ],
+  "watch_out": [
+    {
+      "text": "Could not verify water cuts",
+      "source_label": null,
+      "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en"
+    },
+    {
+      "text": "Could not verify power cuts",
+      "source_label": null,
+      "source_url": "https://bescom.karnataka.gov.in/421/Contingency-Power-Outages/en"
+    },
+    {
+      "text": "HSR Layout ward has 4 officially flood-vulnerable spots (as of 27 Nov 2025)",
+      "source_label": null,
+      "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
+    },
+    {
+      "text": "Could not verify water source",
+      "source_label": null,
+      "source_url": "https://data.opencity.in/dataset/bwssb-stage-wise-cauvery-water-supply-areas"
+    }
+  ],
+  "rent_compare": {
+    "status": "verified",
+    "currency": "INR",
+    "listing_rent": 45000,
+    "fair_range": {
+      "low": 32250,
+      "high": 55000
+    },
+    "median": 44000,
+    "premium_percent": 2.3,
+    "monthly_extra": 1000,
+    "yearly_overpay": 12000,
+    "spread": {
+      "min": 14000,
+      "max": 70000,
+      "n": 46
+    },
+    "portals": [
+      {
+        "name": "NoBroker",
+        "median": 33000,
+        "listings": 17,
+        "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore"
+      },
+      {
+        "name": "MagicBricks",
+        "median": 50000,
+        "listings": 29,
+        "source_url": "https://www.magicbricks.com/2-bhk-flats-for-rent-in-hsr-layout-bangalore-pppfr"
+      }
+    ],
+    "cheapest_comparable": {
+      "rent": 14000,
+      "bhk": 2,
+      "area_sqft": null,
+      "locality": "Hsr Layout",
+      "distance_m": null,
+      "note": null,
+      "portal": "NoBroker",
+      "monthly_saving": 31000,
+      "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-bangalore-for-rs-14000/8aa99a8ea11992b801a11a4ca8af7715/detail"
+    },
+    "fetched_at": "2026-10-29T17:45:00Z"
+  },
+  "residents": {
+    "status": "could_not_verify",
+    "window": null,
+    "total_mentions": 0,
+    "themes": [],
+    "quotes": []
+  },
+  "questions_for_owner": [
+    "How often does the water supply stop, and for how long?",
+    "How often does the power go out, and is there backup?",
+    "Has the street or building flooded during recent monsoons?",
+    "Is the water from the municipal line, a borewell or tankers?"
+  ],
+  "summary_method": "llm"
+}

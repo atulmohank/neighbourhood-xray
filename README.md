@@ -87,7 +87,9 @@ data), `could_not_verify`.
 5. Check the locality (type it if extraction failed) and click **Scan neighbourhood**.
 
 The panel opens on the bundled example report (labelled *Example data*). Scan
-results from stub mode are labelled *Demo*. If you edit `shared/report.example.json`,
+results from stub mode are labelled *Demo*. **Replay cached scan** calls
+`POST /scan?demo=1` and replays the saved live scan for the typed locality (or the
+latest one), labelled *Cached*. If you edit `shared/report.example.json`,
 copy it to `extension/data/report.example.json`:
 
 ```powershell
@@ -106,7 +108,7 @@ Set `XRAY_MODE=live` in `backend/.env` (with `TINYFISH_API_KEY`, `LLM_PROVIDER=g
 | `water_cuts` | BWSSB Press Release page (TinyFish agent, India proxy) + news | Same labelling |
 | `flooding` | OpenCity flood-vulnerable locations KML (static, dataset 27 Nov 2025) | Ward match only; zone-only or no match = could_not_verify |
 | `water_source` | Listing text (`listing_text`); BWSSB Cauvery stage CSV as area context only | Without a statement in the listing = could_not_verify + owner question |
-| `rent_compare` | not implemented | could_not_verify in live mode |
+| `rent_compare` | NoBroker + MagicBricks locality search pages via TinyFish Fetch; one agent run on NoBroker if fewer than 3 comparables | Same-BHK listings naming the same area; fair band = middle half of listed rents, not size-adjusted |
 
 - Official pages are the same for every locality, so each agent result is cached for
   6 hours in `backend/cache/official_<source>.json` and filtered per locality.
@@ -123,10 +125,12 @@ Set `XRAY_MODE=live` in `backend/.env` (with `TINYFISH_API_KEY`, `LLM_PROVIDER=g
   were from July 2026 when checked (29 Oct 2026), so recent hits usually come from news.
 - Agent runs take ~250 s; the first live scan in a 6-hour window is slow.
 - TinyFish returns no credit usage in the API; check the dashboard.
-- Rent comparison and residents are not live yet (could_not_verify). The Rent and
-  Residents tabs show real layouts only for the example report.
-- The extension does not send `listing_text` yet, so `water_source` is usually
-  could_not_verify; there's no UI switch for `?demo=1` yet.
+- Residents are not live yet (could_not_verify). Rent comparables aren't adjusted for
+  size or furnishing; Housing.com blocks Fetch (HTTP 406).
+- The extension does not send `listing_text`; the backend fetches the listing page
+  itself when it has the URL.
+- Saved demo scans for the three demo listings are committed in `backend/cache/`
+  (HSR Sector 7, HSR Sector 2, Sobha Daffodil) so **Replay cached scan** works offline.
 - NoBroker extraction uses page-title/text heuristics and may miss fields.
 - Running scans are kept in memory; restarting the backend loses them.
 - The Ask tab's free-form questions are not implemented.
