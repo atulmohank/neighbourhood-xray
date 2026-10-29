@@ -315,3 +315,17 @@ def test_ask_context_sources_are_numbered_from_scan():
     urls = [s["url"] for s in sources]
     assert len(urls) == len(set(urls)) and all(u.startswith("http") for u in urls)
     assert facts["listing"]["rent"] == 32000
+
+
+def test_empty_agent_page_read_is_a_failure_not_no_reports(monkeypatch):
+    import pytest
+
+    import tinyfish_client as tf
+    from checks import notices as nt
+
+    async def fake_agent(url, goal, schema=None, **kw):
+        return {"run_id": "r", "result": {"page_loaded": True, "notices": []}}  # no latest_notice_date
+
+    monkeypatch.setattr(tf, "run_agent", fake_agent)
+    with pytest.raises(tf.TinyFishError):
+        asyncio.run(nt.read_page_agent(nt.SOURCES["bwssb"], __import__("datetime").date(2025, 10, 30)))

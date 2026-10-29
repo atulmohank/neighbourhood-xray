@@ -74,8 +74,19 @@ Checks run concurrently with a timeout each (`XRAY_CHECK_TIMEOUT`: 45 s in stub
 mode, 300 s in live mode because agent runs on the government sites take ~250 s).
 Any error or timeout becomes `could_not_verify`; it is never turned into a finding.
 
-Check statuses: `verified` (real source, live mode only), `stub` (simulated demo
-data), `could_not_verify`.
+Check statuses:
+- `verified`: findings exist, each with a date and `source_url`.
+- `no_reports`: the source was read fine but has nothing for this area (counts as
+  checked, 0 deduction), e.g. "No water cuts reported for HSR Layout in the past 12 months".
+- `could_not_verify`: only when the source failed, was blocked or timed out.
+- `stub`: simulated demo data (stub mode only).
+
+If fewer than 2 checks are `verified`/`no_reports`, the report shows **"Not enough
+verified data"** and lists the unverified checks instead of a score.
+
+`POST /ask` with `{"scan_id", "question"}` answers from that scan's findings only
+(Groq, ≤60 words, links taken from the scan's own sources) or says "Not in this
+scan" with a question to ask the owner.
 
 ## Chrome extension
 
@@ -104,16 +115,19 @@ Set `XRAY_MODE=live` in `backend/.env` (with `TINYFISH_API_KEY`, `LLM_PROVIDER=g
 
 | Check | Live source | Notes |
 |---|---|---|
-| `power_cuts` | BESCOM Contingency Power Outages page (TinyFish agent, India proxy) + news (TinyFish Search + Fetch) | News shown as "News report — publisher", never as an official notice |
-| `water_cuts` | BWSSB Press Release page (TinyFish agent, India proxy) + news | Same labelling |
-| `flooding` | OpenCity flood-vulnerable locations KML (static, dataset 27 Nov 2025) | Ward match only; zone-only or no match = could_not_verify |
-| `water_source` | Listing text (`listing_text`); BWSSB Cauvery stage CSV as area context only | Without a statement in the listing = could_not_verify + owner question |
+| `power_cuts` | BESCOM Contingency Power Outages page: notice table read from the page HTML (TinyFish agent fallback), each notice document read by the TinyFish agent (India proxy); plus news (TinyFish Search + Fetch) | Last 30 days full weight, 1–12 months half weight. News shown as "News report — publisher", never as official |
+| `water_cuts` | BWSSB Press Release page, same method | Same windows and labelling |
+| `flooding` | OpenCity flood-vulnerable locations KML (static, dataset 27 Nov 2025) | Ward match = verified; nothing listed for the ward = no_reports |
+| `water_source` | Listing text (sent by the extension, else fetched); BWSSB Cauvery stage CSV as area context only | Listing read but silent = no_reports + owner question |
 | `rent_compare` | NoBroker + MagicBricks locality search pages via TinyFish Fetch; one agent run on NoBroker if fewer than 3 comparables | Same-BHK listings naming the same area; fair band = middle half of listed rents, not size-adjusted |
 
-- Official pages are the same for every locality, so each agent result is cached for
-  6 hours in `backend/cache/official_<source>.json` and filtered per locality.
-- News counts only if the fetched article's own publish date is within 30 days, its
-  text names the locality and its title is about a cut/outage.
+- Official pages are the same for every locality, so each page read is cached for
+  6 hours in `backend/cache/official_<source>.json` and filtered per locality. Notice
+  documents are cached permanently in `backend/cache/official_docs/`.
+- Localities are matched on their parent area (`checks/places.py`: "Rajiv Gandhi Nagar,
+  7th Sector, HSR Layout" → HSR Layout); the original name is kept for display.
+- News counts only if the fetched article's own publish date is within 12 months, its
+  text names the area and its title is about a cut/outage; same-day reports are one event.
 - Every successful live scan is saved to `backend/cache/<locality>.json` and
   `latest.json`; `POST /scan?demo=1` replays it with `data_mode: "cache"`.
 - Summary: Groq, ~60 words, 10 s timeout, only the report's own facts; falls back to a
@@ -121,19 +135,21 @@ Set `XRAY_MODE=live` in `backend/.env` (with `TINYFISH_API_KEY`, `LLM_PROVIDER=g
 
 ## Current limitations
 
-- BESCOM's page only links a scanned full-year PDF and BWSSB's newest press releases
-  were from July 2026 when checked (29 Oct 2026), so recent hits usually come from news.
-- Agent runs take ~250 s; the first live scan in a 6-hour window is slow.
+- Official notices are sparse and hard to read: on 30 Oct 2026 BWSSB had 2 notices in
+  the past 12 months (22 and 31 Jul 2026) and BESCOM one scanned full-year PDF. The
+  BWSSB documents are a scanned image and legacy-font Kannada, which the TinyFish agent
+  could not read, so their areas are unknown and they are never attributed to an area
+  (the headline says so).
+- Agent runs take ~250 s; a cold document cache makes the first live scan slow.
 - TinyFish returns no credit usage in the API; check the dashboard.
 - Residents are not live yet (could_not_verify). Rent comparables aren't adjusted for
   size or furnishing; Housing.com blocks Fetch (HTTP 406).
-- The extension does not send `listing_text`; the backend fetches the listing page
-  itself when it has the URL.
+- The listing reader takes locality/rent/BHK from the NoBroker URL and title (and the
+  MagicBricks URL); other portals need manual entry.
 - Saved demo scans for the three demo listings are committed in `backend/cache/`
   (HSR Sector 7, HSR Sector 2, Sobha Daffodil) so **Replay cached scan** works offline.
-- NoBroker extraction uses page-title/text heuristics and may miss fields.
 - Running scans are kept in memory; restarting the backend loses them.
-- The Ask tab's free-form questions are not implemented.
+- Ask needs a scan that is still in the backend's memory (run or replay it first).
 
 ## Secrets
 

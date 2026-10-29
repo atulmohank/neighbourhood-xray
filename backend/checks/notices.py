@@ -25,11 +25,13 @@ import hashlib
 import html
 import json
 import re
+import ssl
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
 import httpx
+import truststore
 
 import tinyfish_client as tf
 from checks import datasets as ds
@@ -52,6 +54,7 @@ PAGE_AGENT_SCHEMA = {
     "type": "object",
     "properties": {
         "page_loaded": {"type": "boolean"},
+        "latest_notice_date": {"type": "string"},
         "notices": {
             "type": "array",
             "items": {
@@ -187,8 +190,15 @@ def parse_notice_table(page_html: str, base_url: str) -> list[dict[str, Any]]:
     return notices
 
 
+# BWSSB serves an incomplete certificate chain; the OS trust store (which fetches the
+# missing intermediate) verifies it where Python's bundled CA list fails. Still verified.
+_SSL = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+
+
 async def read_page_direct(url: str) -> list[dict[str, Any]]:
-    async with httpx.AsyncClient(timeout=30, headers={"User-Agent": "Mozilla/5.0"}, follow_redirects=True) as c:
+    async with httpx.AsyncClient(
+        timeout=30, headers={"User-Agent": "Mozilla/5.0"}, follow_redirects=True, verify=_SSL
+    ) as c:
         r = await c.get(url)
     r.raise_for_status()
     notices = parse_notice_table(r.text, url)
@@ -209,7 +219,14 @@ async def read_page_agent(source: dict[str, Any], since: date) -> list[dict[str,
     res = run["result"] if isinstance(run["result"], dict) else {}
     if not res.get("page_loaded"):
         raise tf.TinyFishError("the agent could not load the page")
-    return [n for n in res.get("notices", []) if parse_date(n.get("date"))]
+    notices = [n for n in res.get("notices", []) if parse_date(n.get("date"))]
+    # An empty list must not become "nothing found": require the agent to have seen the
+    # newest notice on the page, so an empty window is a real reading, not a misread.
+    latest = parse_date(res.get("latest_notice_date"))
+    if not latest:
+        raise tf.TinyFishError("the agent did not report the page's latest notice; treating the read as failed")
+    notices.append({"title": "(latest notice on page)", "date": latest.isoformat(), "urls": [], "marker": True})
+    return notices
 
 
 async def read_document(source: dict[str, Any], url: str) -> dict[str, Any]:
@@ -251,7 +268,7 @@ async def official_notices(source_id: str, today: date) -> dict[str, Any]:
             all_notices, method = await read_page_agent(source, since), "TinyFish agent"
         dated = [n for n in all_notices if parse_date(n["date"])]
         latest = max((parse_date(n["date"]) for n in dated), default=None)
-        in_window = [n for n in dated if parse_date(n["date"]) >= since]
+        in_window = [n for n in dated if parse_date(n["date"]) >= since and not n.get("marker")]
 
         doc_urls = list(dict.fromkeys(u for n in in_window for u in n.get("urls", [])))[:MAX_DOCS_PER_SOURCE]
         docs = await asyncio.gather(*(read_document(source, u) for u in doc_urls), return_exceptions=True)
