@@ -55,11 +55,11 @@ def test_sample_report_scores_58():
 
 def test_unverified_areas_are_excluded():
     areas = [
-        {"id": "power", "score": 80, "status": "verified"},
+        {"id": "power_cuts", "score": 80, "status": "verified"},  # 20% of 20 = 4 points
         {"id": "water_source", "score": None, "status": "could_not_verify"},
     ]
-    assert scoring.overall_score(areas) == 80
-    assert scoring.score_report([{"id": "power", "score": None, "status": "could_not_verify"}]) == (
+    assert scoring.overall_score(areas) == 96
+    assert scoring.score_report([{"id": "power_cuts", "score": None, "status": "could_not_verify"}]) == (
         None,
         "Not enough data",
     )
@@ -67,14 +67,14 @@ def test_unverified_areas_are_excluded():
 
 def test_timeout_and_error_become_could_not_verify(monkeypatch):
     class Slow:
-        CHECK_ID = "power"
+        CHECK_ID = "power_cuts"
 
         @staticmethod
         async def run(listing):
             await asyncio.sleep(1)
 
     class Broken:
-        CHECK_ID = "flood_risk"
+        CHECK_ID = "flooding"
 
         @staticmethod
         async def run(listing):
@@ -132,3 +132,40 @@ def test_cors_allows_extension_origin():
             headers={"Origin": "chrome-extension://abcdef", "Access-Control-Request-Method": "POST"},
         )
         assert r.headers.get("access-control-allow-origin") == "chrome-extension://abcdef"
+
+
+def test_handoff_deduction_rules():
+    assert scoring.water_cuts_deduction(100) == 25
+    assert scoring.power_cuts_deduction(100) == 20
+    assert scoring.flooding_deduction(True, 10) == 25
+    assert scoring.flooding_deduction(False, 0) == 0
+    assert scoring.water_source_deduction(True) == 10
+    assert scoring.rent_deduction(50) == 20 and scoring.rent_deduction(-5) == 0
+    assert scoring.area_score("water_cuts", 25) == 0 and scoring.area_score("power_cuts", 0) == 100
+    assert scoring.verdict_for(75) == "Looks good"
+    assert scoring.verdict_for(74) == "Check before signing"
+    assert scoring.verdict_for(49) == "High risk"
+
+
+def test_flooding_matches_official_ward():
+    from checks.flooding import check_flooding
+
+    hsr7 = check_flooding({"locality": "HSR Layout Sector 7, Bengaluru"})
+    assert hsr7["status"] == "verified" and hsr7["source_url"].startswith("https://data.opencity.in/")
+    assert hsr7["score"] == scoring.area_score("flooding", scoring.flooding_deduction(True, 0))
+    hsr2 = check_flooding({"locality": "HSR Layout Sector 2, Bengaluru"})
+    assert hsr2["score"] < hsr7["score"]  # sector 2 has its own listed spot
+    assert check_flooding({"locality": "Banashankari, Bengaluru"})["status"] == "could_not_verify"
+    assert check_flooding({"locality": "Mahadevapura"})["status"] == "could_not_verify"  # zone only
+
+
+def test_water_source_uses_listing_text_only():
+    from checks.water_source import check_water_source
+
+    url = "https://www.nobroker.in/property/x"
+    none = check_water_source({"locality": "HSR Layout Sector 7", "listing_text": "2 BHK, lift", "listing_url": url})
+    assert none["status"] == "could_not_verify" and "Area-level context only" in none["details"][-1]
+    bore = check_water_source({"locality": "x", "listing_text": "borewell water 24x7", "listing_url": url})
+    assert bore["status"] == "verified" and bore["score"] == 0 and bore["source_url"] == url
+    cauvery = check_water_source({"locality": "x", "listing_text": "Cauvery and borewell", "listing_url": url})
+    assert cauvery["score"] == 100

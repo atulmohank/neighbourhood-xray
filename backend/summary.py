@@ -14,10 +14,10 @@ PLACEHOLDER_NOTE = "[Placeholder summary — LLM summaries not implemented yet]"
 # Generic questions keyed by check id. They ask about a topic; they do not
 # assert anything about the listing.
 _TOPIC_QUESTIONS: dict[str, str] = {
-    "water_supply": "How often does the water supply stop, and for how long?",
-    "power": "How often does the power go out, and is there backup?",
-    "flood_risk": "Has the street or building flooded during recent monsoons?",
-    "rent_value": "Is the rent negotiable, given comparable listings nearby?",
+    "water_cuts": "How often does the water supply stop, and for how long?",
+    "power_cuts": "How often does the power go out, and is there backup?",
+    "flooding": "Has the street or building flooded during recent monsoons?",
+    "rent_compare": "Is the rent negotiable, given comparable listings nearby?",
     "water_source": "Is the water from the municipal line, a borewell or tankers?",
 }
 

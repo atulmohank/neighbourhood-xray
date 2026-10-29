@@ -1,4 +1,4 @@
-"""power check. Stub mode returns simulated demo data, not real findings."""
+"""rent_compare check. Stub mode returns simulated demo data, not real findings."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from typing import Any
 from checks.base import live_check, stub_delay, stub_result
 from tinyfish_client import is_live_mode
 
-CHECK_ID = "power"
-GOAL = "Find planned and unplanned power cut schedules for {locality}."
+CHECK_ID = "rent_compare"
+GOAL = "Find rents of comparable {bhk} BHK listings in {locality}."
 
 
 async def run(listing: dict[str, Any]) -> dict[str, Any]:
@@ -17,8 +17,8 @@ async def run(listing: dict[str, Any]) -> dict[str, Any]:
     await stub_delay()
     return stub_result(
         CHECK_ID,
-        85,
-        "Stable",
-        "Simulated: few planned power cuts",
+        50,
+        "Above median",
+        "Simulated: rent above the area median",
         ["No real sources were queried in stub mode."],
     )

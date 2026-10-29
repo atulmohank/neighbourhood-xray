@@ -1,6 +1,7 @@
 # Secrets
 .env
 .env.*
+*.env
 !.env.example
 
 # Python
@@ -29,3 +30,6 @@ desktop.ini
 *.crx
 *.pem
 *.zip
+
+# TinyFish smoke-test raw output (may contain live-view URLs)
+backend/scripts/smoke_output*.txt

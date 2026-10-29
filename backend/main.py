@@ -44,6 +44,8 @@ class ScanRequest(BaseModel):
     rent: int | None = Field(default=None, ge=0)
     bhk: int | None = Field(default=None, ge=0, le=20)
     listing_url: str | None = None
+    # Free text from the listing page (description/amenities); used by the water_source check.
+    listing_text: str | None = Field(default=None, max_length=20000)
     source: str = "manual"
 
 
