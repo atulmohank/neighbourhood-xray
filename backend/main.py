@@ -26,6 +26,7 @@ from checks import ALL_CHECKS  # noqa: E402  (after load_dotenv so env is set)
 from checks.base import could_not_verify, now_iso  # noqa: E402
 from scoring import AREA_LABELS, checked_count, level_for, score_report, unverified_labels  # noqa: E402
 from summary import build_owner_questions, build_summary, generate_summary  # noqa: E402
+import ask  # noqa: E402
 from tinyfish_client import is_live_mode  # noqa: E402
 
 # Live official-page agent runs take ~250 s (see tinyfish_client), so live mode gets a longer budget.
@@ -50,6 +51,11 @@ class ScanRequest(BaseModel):
     # Free text from the listing page (description/amenities); used by the water_source check.
     listing_text: str | None = Field(default=None, max_length=20000)
     source: str = "manual"
+
+
+class AskRequest(BaseModel):
+    scan_id: str = Field(min_length=1, max_length=64)
+    question: str = Field(min_length=2, max_length=500)
 
 
 class Scan:
@@ -298,3 +304,12 @@ async def get_scan(scan_id: str) -> dict[str, Any]:
     if scan is not None:
         return {"scan_id": scan_id, "status": scan.status, "report": scan.report}
     raise HTTPException(status_code=404, detail="Unknown scan id")
+
+
+@app.post("/ask")
+async def ask_scan(req: AskRequest) -> dict[str, Any]:
+    """Answer a question from ONE scan's findings only (see ask.py)."""
+    scan = SCANS.get(req.scan_id)
+    if scan is None or scan.report is None:
+        raise HTTPException(status_code=404, detail="Unknown or unfinished scan id")
+    return await ask.answer(scan.report, req.question)

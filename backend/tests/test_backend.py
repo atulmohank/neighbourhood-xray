@@ -5,6 +5,9 @@ import sys
 from pathlib import Path
 
 os.environ["XRAY_MODE"] = "stub"
+# Never call Groq or use real keys from backend/.env in tests (load_dotenv does not override these).
+os.environ["LLM_PROVIDER"] = "none"
+os.environ["TINYFISH_API_KEY"] = ""
 os.environ["XRAY_STUB_MIN_DELAY"] = "0.01"
 os.environ["XRAY_STUB_MAX_DELAY"] = "0.05"
 os.environ["XRAY_DEMO_STEP"] = "0"
@@ -292,3 +295,23 @@ def test_official_notice_table_and_events():
     assert [e["date"] for e in events] == ["2026-07-31"] and events[0]["source_url"] == "https://x/a.pdf"
     assert [n["title"] for n in unreadable] == ["Shutdown 2"]
     assert nt.official_events(data, ["banashankari"], since)[0] == []
+
+
+def test_ask_endpoint_falls_back_without_llm():
+    with TestClient(main.app) as client:
+        assert client.post("/ask", json={"scan_id": "nope", "question": "Is water bad?"}).status_code == 404
+        scan_id = client.post("/scan", json={"locality": "HSR Layout", "rent": 30000, "bhk": 2}).json()["scan_id"]
+        with client.stream("GET", f"/scan/{scan_id}/stream") as s:
+            "".join(s.iter_text())
+        a = client.post("/ask", json={"scan_id": scan_id, "question": "Is it safe at night?"}).json()
+        assert a["in_scan"] is False and a["answer"] == "Not in this scan." and "night" in a["owner_question"]
+
+
+def test_ask_context_sources_are_numbered_from_scan():
+    import ask
+
+    report = json.loads((ROOT / "shared" / "report.example.json").read_text(encoding="utf-8"))
+    facts, sources = ask.scan_context(report)
+    urls = [s["url"] for s in sources]
+    assert len(urls) == len(set(urls)) and all(u.startswith("http") for u in urls)
+    assert facts["listing"]["rent"] == 32000

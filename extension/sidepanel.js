@@ -283,20 +283,69 @@ function renderResidents(r) {
   );
 }
 
+const ASK_CHIPS = ["Is water bad here?", "Any power cuts recently?", "Is the rent fair?", "Does it flood?", "Safe at night?"];
+let askState = { scanId: null, log: [], extraOwnerQs: [] };
+
 function renderAsk(r) {
   const v = $("view-ask");
   v.replaceChildren();
-  const qs = r.questions_for_owner || [];
-  v.append(
-    h("section", { class: "card" },
-      h("div", { class: "label-row" }, h("span", { class: "label" }, "Ask the owner"), h("span", { class: "label mono" }, qs.length)),
-      qs.length ? qs.map((q) => h("label", { class: "ask-q" }, h("input", { type: "checkbox" }), h("span", {}, q))) : h("p", { class: "muted" }, "No questions yet.")
-    ),
-    h("section", { class: "card" },
-      h("div", { class: "label-row" }, h("span", { class: "label" }, "Ask anything")),
-      h("p", { class: "muted" }, "Coming soon — free-form questions about the area are not implemented yet.")
-    )
+  // A real scan (live/stub/cache) has a backend scan id; the bundled example doesn't.
+  const scanId = r.data_mode === "example" ? null : r.scan_id;
+  if (askState.scanId !== scanId) askState = { scanId, log: [], extraOwnerQs: [] };
+  const ownerQs = [...(r.questions_for_owner || []), ...askState.extraOwnerQs];
+
+  const chat = h("section", { class: "card ask-chat" },
+    askState.log.length
+      ? askState.log.map((m) =>
+          m.role === "user"
+            ? h("div", { class: "bubble user" }, m.text)
+            : h("div", { class: `bubble bot${m.inScan ? "" : " miss"}` },
+                h("div", {}, m.text),
+                m.sources?.length ? h("div", { class: "bubble-src" }, m.sources.map((s) => sourceLink(s.url, s.label))) : null,
+                !m.inScan && m.ownerQuestion ? h("div", { class: "muted small" }, "Ask the owner: ", m.ownerQuestion) : null))
+      : h("p", { class: "muted" }, scanId ? "Ask about this scan. Answers use only its findings." : "Run or replay a scan to ask questions about it.")
   );
+
+  const input = h("input", { type: "text", id: "ask-input", placeholder: "Ask anything about this area…", maxlength: "500", autocomplete: "off" });
+  const send = h("button", { class: "btn ask-send", id: "ask-send" }, "Ask");
+  const submit = () => askQuestion(r, input.value);
+  send.addEventListener("click", submit);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+  if (!scanId) { input.disabled = true; send.disabled = true; }
+
+  v.append(
+    chat,
+    h("section", { class: "card" },
+      h("div", { class: "label-row" }, h("span", { class: "label" }, "Ask the owner"), h("span", { class: "label mono" }, ownerQs.length)),
+      ownerQs.length ? ownerQs.map((q) => h("label", { class: "ask-q" }, h("input", { type: "checkbox" }), h("span", {}, q))) : h("p", { class: "muted" }, "No questions yet.")
+    ),
+    h("div", { class: "chips" }, ASK_CHIPS.map((c) => {
+      const b = h("button", { class: "chip-btn" }, c);
+      b.disabled = !scanId;
+      b.addEventListener("click", () => askQuestion(r, c));
+      return b;
+    })),
+    h("div", { class: "ask-row" }, input, send)
+  );
+}
+
+async function askQuestion(r, question) {
+  const q = (question || "").trim();
+  if (q.length < 2 || !askState.scanId) return;
+  askState.log.push({ role: "user", text: q }, { role: "bot", text: "Checking this scan…", inScan: true });
+  renderAsk(r);
+  const pending = askState.log[askState.log.length - 1];
+  try {
+    const res = await fetch(`${BACKEND}/ask`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scan_id: askState.scanId, question: q }) });
+    if (!res.ok) throw new Error(res.status === 404 ? "this scan is no longer on the backend — run or replay it again" : `HTTP ${res.status}`);
+    const a = await res.json();
+    Object.assign(pending, { text: a.answer, inScan: a.in_scan, sources: a.sources, ownerQuestion: a.owner_question });
+    if (!a.in_scan && a.owner_question && !askState.extraOwnerQs.includes(a.owner_question)) askState.extraOwnerQs.push(a.owner_question);
+  } catch (err) {
+    Object.assign(pending, { text: `Couldn't ask: ${err.message}.`, inScan: false });
+  }
+  renderAsk(r);
+  $("ask-input")?.focus();
 }
 
 // ---------- listing extraction ----------
