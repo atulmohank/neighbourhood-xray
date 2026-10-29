@@ -304,15 +304,15 @@ async function loadListingFromTab() {
   const state = $("extract-state");
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !/^https:\/\/www\.nobroker\.in\//.test(tab.url || "")) throw new Error("not a NoBroker tab");
+    if (!tab || !/^https:\/\/www\.(nobroker\.in|magicbricks\.com)\//.test(tab.url || "")) throw new Error("not a listing tab");
     const res = await chrome.tabs.sendMessage(tab.id, { type: "xray:extractListing" });
     if (!res?.ok) throw new Error(res?.error || "no response");
     const l = res.listing;
     if (l.locality) $("in-locality").value = l.locality;
     if (l.rent) $("in-rent").value = l.rent;
     if (l.bhk) $("in-bhk").value = l.bhk;
-    window.__listingUrl = l.listing_url;
-    state.textContent = l.locality ? "From NoBroker — please check" : "Locality not found — type it";
+    window.__listing = { url: l.listing_url, text: l.listing_text, source: l.source };
+    state.textContent = l.locality ? `From ${l.source === "magicbricks" ? "MagicBricks" : "NoBroker"} — please check` : "Locality not found — type it";
   } catch {
     state.textContent = "Enter the locality manually";
   }
@@ -351,7 +351,7 @@ async function startScan(demo = false) {
     const n = parseInt($(id).value, 10);
     return Number.isFinite(n) ? n : null;
   };
-  const body = { locality, rent: num("in-rent"), bhk: num("in-bhk"), listing_url: window.__listingUrl || null, source: window.__listingUrl ? "nobroker" : "manual" };
+  const body = { locality, rent: num("in-rent"), bhk: num("in-bhk"), listing_url: window.__listing?.url || null, listing_text: window.__listing?.text || null, source: window.__listing?.source || "manual" };
 
   if (source) source.close();
   setBusy(true);
