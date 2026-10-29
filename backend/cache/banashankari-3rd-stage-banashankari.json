@@ -220,11 +220,6 @@
   ],
   "good": [
     {
-      "text": "No water cuts in last 30 days · 3 news reports in past 12 months (latest 22 Sep 2026)",
-      "source_label": null,
-      "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html"
-    },
-    {
       "text": "No official flood-vulnerable spot listed for this ward (as of 27 Nov 2025)",
       "source_label": null,
       "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
@@ -241,6 +236,11 @@
     }
   ],
   "watch_out": [
+    {
+      "text": "No water cuts in last 30 days · 3 news reports in past 12 months (latest 22 Sep 2026)",
+      "source_label": null,
+      "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html"
+    },
     {
       "text": "1 power cut in last 30 days (1 news report) · 5 news reports in past 12 months (latest 29 Oct 2026)",
       "source_label": null,

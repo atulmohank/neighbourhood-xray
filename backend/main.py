@@ -108,16 +108,14 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         for r in results
     ]
     score, verdict = score_report(area_scores)
-    good = [
-        {"text": c["headline"], "source_label": None, "source_url": c["source_url"]}
-        for c, a in zip(checks, area_scores)
-        if a["level"] == "good"
-    ]
-    watch_out = [
-        {"text": c["headline"], "source_label": None, "source_url": c["source_url"]}
-        for c, a in zip(checks, area_scores)
-        if a["level"] in {"watch", "risk", "unknown"}
-    ]
+    good, watch_out = [], []
+    for c, a in zip(checks, area_scores):
+        item = {"text": c["headline"], "source_label": None, "source_url": c["source_url"]}
+        # Reported cuts/outages are always a watch-out, even when the area score stays high.
+        if c.get("findings") or a["level"] in {"watch", "risk", "unknown"}:
+            watch_out.append(item)
+        else:
+            good.append(item)
     sourced = [c for c in checks if c["source_url"]]
     data_mode = "live" if is_live_mode() else "stub"
     return {
