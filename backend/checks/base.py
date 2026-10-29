@@ -15,7 +15,6 @@ import random
 from datetime import datetime, timezone
 from typing import Any
 
-from tinyfish_client import run_agent
 
 
 def now_iso() -> str:
@@ -53,9 +52,3 @@ def could_not_verify(check_id: str, reason: str) -> dict[str, Any]:
         "fetched_at": now_iso(),
     }
 
-
-async def live_check(check_id: str, listing: dict[str, Any], goal: str) -> dict[str, Any]:
-    # Raises until the TinyFish client is implemented; the runner turns that
-    # into could_not_verify.
-    await run_agent(url="", goal=goal.format(**listing))
-    raise NotImplementedError(f"Result mapping for {check_id} not implemented")

@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import time
 import uuid
 from pathlib import Path
@@ -24,11 +25,13 @@ load_dotenv()
 from checks import ALL_CHECKS  # noqa: E402  (after load_dotenv so env is set)
 from checks.base import could_not_verify, now_iso  # noqa: E402
 from scoring import AREA_LABELS, level_for, score_report  # noqa: E402
-from summary import build_owner_questions, build_summary  # noqa: E402
+from summary import build_owner_questions, build_summary, generate_summary  # noqa: E402
 from tinyfish_client import is_live_mode  # noqa: E402
 
-CHECK_TIMEOUT_SECONDS = float(os.getenv("XRAY_CHECK_TIMEOUT", "45"))
+# Live official-page agent runs take ~250 s (see tinyfish_client), so live mode gets a longer budget.
+CHECK_TIMEOUT_SECONDS = float(os.getenv("XRAY_CHECK_TIMEOUT", "300" if is_live_mode() else "45"))
 CACHE_DIR = Path(__file__).resolve().parent / "cache"
+DEMO_REPLAY_STEP_SECONDS = float(os.getenv("XRAY_DEMO_STEP", "0.6"))
 
 app = FastAPI(title="Neighbourhood X-Ray", version="0.1.0")
 app.add_middleware(
@@ -94,7 +97,10 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         }
         for r in results
     ]
-    checks = [{k: r[k] for k in ("id", "status", "headline", "details", "source_url", "fetched_at")} for r in results]
+    checks = [
+        {k: r[k] for k in ("id", "status", "headline", "details", "source_url", "fetched_at", "findings") if k in r}
+        for r in results
+    ]
     score, verdict = score_report(area_scores)
     good = [
         {"text": c["headline"], "source_label": None, "source_url": c["source_url"]}
@@ -148,6 +154,58 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def locality_slug(locality: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", (locality or "").lower()).strip("-")[:80] or "unknown"
+
+
+def save_to_cache(report: dict[str, Any]) -> None:
+    """Keep the last successful live scan per locality, plus latest.json, for offline demos."""
+    try:
+        CACHE_DIR.mkdir(exist_ok=True)
+        body = json.dumps(report, indent=2, ensure_ascii=False)
+        (CACHE_DIR / f"{locality_slug(report['listing'].get('locality'))}.json").write_text(body, encoding="utf-8")
+        (CACHE_DIR / "latest.json").write_text(body, encoding="utf-8")
+    except OSError:
+        pass  # caching is best effort
+
+
+def load_from_cache(locality: str) -> dict[str, Any] | None:
+    for path in (CACHE_DIR / f"{locality_slug(locality)}.json", CACHE_DIR / "latest.json"):
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+    return None
+
+
+async def replay_scan(scan: Scan, cached: dict[str, Any]) -> None:
+    """Replay a saved live scan through the same SSE events (offline demo)."""
+    checks = cached.get("checks", [])
+    await scan.emit("started", {"scan_id": scan.id, "total": len(checks), "checks": [c["id"] for c in checks]})
+    for i, c in enumerate(checks, 1):
+        await asyncio.sleep(DEMO_REPLAY_STEP_SECONDS)
+        await scan.emit(
+            "progress",
+            {
+                "scan_id": scan.id,
+                "check_id": c["id"],
+                "status": c["status"],
+                "headline": c["headline"],
+                "completed": i,
+                "total": len(checks),
+            },
+        )
+    report = {
+        **cached,
+        "scan_id": scan.id,
+        "data_mode": "cache",
+        "cached_from": {"scan_id": cached.get("scan_id"), "generated_at": cached.get("generated_at")},
+        "disclaimer": f"Replayed from a saved live scan run at {cached.get('generated_at')}; not re-checked now.",
+    }
+    scan.report = report
+    scan.status = "complete"
+    await scan.emit("report", report)
+    await scan.emit("done", {"scan_id": scan.id, "status": scan.status})
+
+
 async def run_scan(scan: Scan) -> None:
     total = len(ALL_CHECKS)
     await scan.emit("started", {"scan_id": scan.id, "total": total, "checks": [c.CHECK_ID for c in ALL_CHECKS]})
@@ -170,28 +228,35 @@ async def run_scan(scan: Scan) -> None:
 
     await asyncio.gather(*(run_and_report(c) for c in ALL_CHECKS))
     ordered = [results[c.CHECK_ID] for c in ALL_CHECKS]
-    scan.report = build_report(scan, ordered)
+    report = build_report(scan, ordered)
+    report["summary"], report["summary_method"] = await generate_summary(report)
+    scan.report = report
     scan.status = "complete"
-    try:
-        CACHE_DIR.mkdir(exist_ok=True)
-        (CACHE_DIR / f"{scan.id}.json").write_text(json.dumps(scan.report, indent=2), encoding="utf-8")
-    except OSError:
-        pass  # caching is best effort
+    if report["data_mode"] == "live" and report["score"] is not None:
+        save_to_cache(report)
     await scan.emit("report", scan.report)
     await scan.emit("done", {"scan_id": scan.id, "status": scan.status})
 
 
 @app.get("/health")
 async def health() -> dict[str, Any]:
-    return {"status": "ok", "mode": "live" if is_live_mode() else "stub"}
+    return {"status": "ok", "mode": "live" if is_live_mode() else "stub", "cache_available": (CACHE_DIR / "latest.json").is_file()}
 
 
 @app.post("/scan")
-async def start_scan(req: ScanRequest) -> dict[str, Any]:
+async def start_scan(req: ScanRequest, demo: bool = False) -> dict[str, Any]:
+    """Start a scan. With ?demo=1, replay the saved live scan for this locality (or latest.json)."""
     scan_id = uuid.uuid4().hex[:12]
     scan = Scan(scan_id, req.model_dump())
+    if demo:
+        cached = load_from_cache(req.locality)
+        if cached is None:
+            raise HTTPException(status_code=404, detail="No cached live scan to replay")
+        coro = replay_scan(scan, cached)
+    else:
+        coro = run_scan(scan)
     SCANS[scan_id] = scan
-    scan.task = asyncio.create_task(run_scan(scan))  # keep a reference so it is not GC'd
+    scan.task = asyncio.create_task(coro)  # keep a reference so it is not GC'd
     return {"scan_id": scan_id, "stream_url": f"/scan/{scan_id}/stream", "report_url": f"/scan/{scan_id}"}
 
 
@@ -228,7 +293,4 @@ async def get_scan(scan_id: str) -> dict[str, Any]:
     scan = SCANS.get(scan_id)
     if scan is not None:
         return {"scan_id": scan_id, "status": scan.status, "report": scan.report}
-    cached = CACHE_DIR / f"{scan_id}.json"
-    if scan_id.isalnum() and cached.is_file():
-        return {"scan_id": scan_id, "status": "complete", "report": json.loads(cached.read_text(encoding="utf-8"))}
     raise HTTPException(status_code=404, detail="Unknown scan id")

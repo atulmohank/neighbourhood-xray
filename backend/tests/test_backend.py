@@ -7,6 +7,7 @@ from pathlib import Path
 os.environ["XRAY_MODE"] = "stub"
 os.environ["XRAY_STUB_MIN_DELAY"] = "0.01"
 os.environ["XRAY_STUB_MAX_DELAY"] = "0.05"
+os.environ["XRAY_DEMO_STEP"] = "0"
 
 BACKEND = Path(__file__).resolve().parent.parent
 ROOT = BACKEND.parent
@@ -102,7 +103,8 @@ def parse_sse(text):
 
 def test_scan_flow_over_sse():
     with TestClient(main.app) as client:
-        assert client.get("/health").json() == {"status": "ok", "mode": "stub"}
+        health = client.get("/health").json()
+        assert health["status"] == "ok" and health["mode"] == "stub"
         r = client.post("/scan", json={"locality": "HSR Layout", "rent": 32000, "bhk": 2})
         scan_id = r.json()["scan_id"]
         with client.stream("GET", f"/scan/{scan_id}/stream") as s:
@@ -122,7 +124,7 @@ def test_scan_flow_over_sse():
         got = client.get(f"/scan/{scan_id}").json()
         assert got["status"] == "complete" and got["report"]["scan_id"] == scan_id
         assert client.get("/scan/doesnotexist").status_code == 404
-    (BACKEND / "cache" / f"{scan_id}.json").unlink(missing_ok=True)
+    assert not (BACKEND / "cache" / "hsr-layout.json").exists()  # stub scans are never cached
 
 
 def test_cors_allows_extension_origin():
@@ -169,3 +171,47 @@ def test_water_source_uses_listing_text_only():
     assert bore["status"] == "verified" and bore["score"] == 0 and bore["source_url"] == url
     cauvery = check_water_source({"locality": "x", "listing_text": "Cauvery and borewell", "listing_url": url})
     assert cauvery["score"] == 100
+
+
+def test_demo_replays_cached_live_scan(tmp_path, monkeypatch):
+    monkeypatch.setattr(main, "CACHE_DIR", tmp_path)
+    saved = json.loads((ROOT / "shared" / "report.example.json").read_text(encoding="utf-8"))
+    saved["data_mode"] = "live"
+    main.save_to_cache(saved)
+    assert (tmp_path / "hsr-layout-sector-2-bengaluru.json").is_file() and (tmp_path / "latest.json").is_file()
+    with TestClient(main.app) as client:
+        assert client.post("/scan?demo=1", json={"locality": "Nowhere"}).status_code == 200  # falls back to latest
+        scan_id = client.post("/scan?demo=1", json={"locality": "HSR Layout Sector 2, Bengaluru"}).json()["scan_id"]
+        with client.stream("GET", f"/scan/{scan_id}/stream") as s:
+            events = parse_sse("".join(s.iter_text()))
+        report = events[-2][1]
+        assert report["data_mode"] == "cache" and report["score"] == saved["score"]
+        assert report["cached_from"]["generated_at"] == saved["generated_at"]
+    monkeypatch.setattr(main, "CACHE_DIR", tmp_path / "empty")
+    with TestClient(main.app) as client:
+        assert client.post("/scan?demo=1", json={"locality": "HSR"}).status_code == 404
+
+
+def test_summary_falls_back_to_template(monkeypatch):
+    import summary
+
+    report = {"listing": {"locality": "X"}, "score": 90, "verdict": "Looks good",
+              "checks": [{"id": "power_cuts", "status": "verified", "headline": "2 power cut reports", "details": []}]}
+    monkeypatch.setenv("LLM_PROVIDER", "groq")
+    monkeypatch.setenv("LLM_MODEL", "m")
+    monkeypatch.setenv("LLM_API_KEY", "not-a-real-key")
+    monkeypatch.setattr(summary, "GROQ_CHAT_URL", "http://127.0.0.1:9/unreachable")
+    text, method = asyncio.run(summary.generate_summary(report))
+    assert method == "template" and "2 power cut reports" in text
+    assert summary.numbers_grounded("2 reports", '{"x": "2 power cut reports"}')
+    assert not summary.numbers_grounded("7 reports", '{"x": "2 power cut reports"}')
+
+
+def test_water_source_reads_nobroker_field():
+    from checks.water_source import check_water_source
+
+    url = "https://www.nobroker.in/property/x"
+    corp = check_water_source({"locality": "x", "listing_url": url}, "##### Water Supply ##### Corporation ##### Floors")
+    assert corp["status"] == "verified" and corp["score"] == 100
+    bore = check_water_source({"locality": "x", "listing_url": url}, "##### Water Supply ##### Borewell #####")
+    assert bore["status"] == "verified" and bore["score"] == 0

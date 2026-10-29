@@ -21,6 +21,16 @@ Verified against the docs and a real smoke test on 2026-10-29
 * HTTP errors: 400 invalid input, 401 bad key, 402/403 credits, 500. Error
   body: {"error": {"code", "message", "details"}, "request_id"}.
 * No credit/cost field is returned by the API; check usage in the dashboard.
+
+Search (GET https://api.search.tinyfish.ai) and Fetch (POST
+https://api.fetch.tinyfish.ai) are free within daily allowances (Search
+12,000 requests/day, 30/min; Fetch 1,000 URLs/day, 150/min). Checked
+2026-10-29:
+* Fetch cannot reach bescom/bwssb .karnataka.gov.in (per-URL ``proxy_error``)
+  and has no proxy option, so official pages go through run_agent.
+* Search ``date`` values are relative ("1 week ago") and not reliable: a
+  March article came back as "1 week ago" with after_date set. Use the
+  fetched article's ``published_date`` instead.
 """
 
 from __future__ import annotations
@@ -32,6 +42,8 @@ from typing import Any, Awaitable, Callable
 import httpx
 
 AGENT_RUN_SSE_URL = "https://agent.tinyfish.ai/v1/automation/run-sse"
+SEARCH_URL = "https://api.search.tinyfish.ai"
+FETCH_URL = "https://api.fetch.tinyfish.ai"
 
 
 class TinyFishError(RuntimeError):
@@ -114,3 +126,29 @@ def result_text(result: Any) -> str:
     if isinstance(result, dict) and isinstance(result.get("result"), str):
         return result["result"]
     return json.dumps(result, ensure_ascii=False) if result is not None else ""
+
+
+def _headers() -> dict[str, str]:
+    key = api_key()
+    if not key:
+        raise TinyFishNotConfigured("TINYFISH_API_KEY is not set")
+    return {"X-API-Key": key}
+
+
+async def search(query: str, **params: Any) -> list[dict[str, Any]]:
+    """Search API. Returns results[] ({title, snippet, url, date, publisher, ...})."""
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.get(SEARCH_URL, headers=_headers(), params={"query": query, **params})
+    if r.status_code != 200:
+        raise TinyFishError(f"TinyFish search HTTP {r.status_code}")
+    return r.json().get("results", [])
+
+
+async def fetch(urls: list[str], **body: Any) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Fetch API (max 10 URLs). Returns (results, errors)."""
+    async with httpx.AsyncClient(timeout=150) as client:
+        r = await client.post(FETCH_URL, headers=_headers(), json={"urls": urls[:10], **body})
+    if r.status_code != 200:
+        raise TinyFishError(f"TinyFish fetch HTTP {r.status_code}")
+    data = r.json()
+    return data.get("results", []), data.get("errors", [])

@@ -12,18 +12,23 @@ from typing import Any
 import scoring
 from checks import datasets as ds
 from checks.base import could_not_verify, now_iso, stub_delay
+import tinyfish_client as tf
 from tinyfish_client import is_live_mode
 
 CHECK_ID = "water_source"
 
-MUNICIPAL_RE = re.compile(r"\b(cauvery|kaveri|bwssb|corporation water|municipal water)\b", re.I)
+# Free text, plus NoBroker's "Water Supply: Corporation | Borewell | Both" field.
+MUNICIPAL_RE = re.compile(
+    r"\b(cauvery|kaveri|bwssb|corporation water|municipal water)\b|water supply\W+(corporation|both)\b", re.I
+)
 PRIVATE_RE = re.compile(r"\b(bore\s?well|tankers?)\b", re.I)
 
 
 def cauvery_context(locality: str) -> str | None:
-    words = set(ds.place_words(locality.split(",")[0]))
-    if not words:
+    named = [set(ds.place_words(p)) for p in locality.split(",") if ds.place_words(p)]
+    if not named:
         return None
+    words = named[-1]  # broadest named area, as in checks/notices.py
     for stage, area in ds.cauvery_areas():
         if words <= set(ds.place_words(area)):
             return (
@@ -39,8 +44,20 @@ def snippet(text: str, m: re.Match) -> str:
     return "…" + " ".join(text[start:end].split()) + "…"
 
 
-def check_water_source(listing: dict[str, Any]) -> dict[str, Any]:
-    text = listing.get("listing_text") or ""
+async def listing_text_for(listing: dict[str, Any]) -> str:
+    """The text the extension sent, else the listing page via TinyFish Fetch."""
+    if listing.get("listing_text"):
+        return listing["listing_text"]
+    url = listing.get("listing_url") or ""
+    if not url.startswith("http"):
+        return ""
+    results, _errors = await tf.fetch([url], format="markdown", per_url_timeout_ms=30000)
+    return results[0]["text"] if results and isinstance(results[0].get("text"), str) else ""
+
+
+def check_water_source(listing: dict[str, Any], text: str | None = None) -> dict[str, Any]:
+    if text is None:
+        text = listing.get("listing_text") or ""
     context = cauvery_context(listing.get("locality") or "")
     municipal = MUNICIPAL_RE.search(text)
     private = PRIVATE_RE.search(text)
@@ -57,11 +74,12 @@ def check_water_source(listing: dict[str, Any]) -> dict[str, Any]:
             "id": CHECK_ID,
             "status": "verified",
             "score": scoring.area_score(CHECK_ID, deduction),
-            "tag": "Borewell/tanker only" if only_private else "Cauvery (per listing)",
+            "tag": "Borewell/tanker only" if only_private else "Municipal (per listing)",
+            # Quote what the listing says; "Corporation" is not proof of a Cauvery connection.
             "headline": (
-                "Listing mentions borewell/tanker water, not Cauvery"
+                f"Listing mentions \"{' '.join(m.group(0).split())}\" water, not a municipal supply"
                 if only_private
-                else "Listing says the flat has Cauvery/BWSSB water"
+                else f"Listing says: \"{' '.join(re.sub(r'[#:]+', ' ', m.group(0)).split())}\" (municipal supply, per owner)"
             ),
             "details": details,
             "source_url": url,
@@ -80,6 +98,10 @@ def check_water_source(listing: dict[str, Any]) -> dict[str, Any]:
 
 async def run(listing: dict[str, Any]) -> dict[str, Any]:
     if is_live_mode():
-        return check_water_source(listing)
+        try:
+            text = await listing_text_for(listing)
+        except tf.TinyFishError:
+            text = ""
+        return check_water_source(listing, text)
     await stub_delay()
     raise RuntimeError("Simulated source failure (stub mode demo of could_not_verify)")

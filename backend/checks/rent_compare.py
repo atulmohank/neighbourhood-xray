@@ -4,16 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from checks.base import live_check, stub_delay, stub_result
+from checks.base import could_not_verify, stub_delay, stub_result
 from tinyfish_client import is_live_mode
 
 CHECK_ID = "rent_compare"
-GOAL = "Find rents of comparable {bhk} BHK listings in {locality}."
 
 
 async def run(listing: dict[str, Any]) -> dict[str, Any]:
     if is_live_mode():
-        return await live_check(CHECK_ID, listing, GOAL)
+        return could_not_verify(CHECK_ID, "Live rent comparison is not implemented yet.")
     await stub_delay()
     return stub_result(
         CHECK_ID,

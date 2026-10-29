@@ -51,7 +51,7 @@ document.querySelectorAll(".tab").forEach((btn) =>
 function render(report) {
   const mode = report.data_mode;
   const pill = $("mode-pill");
-  pill.textContent = { example: "EXAMPLE", stub: "DEMO", live: "LIVE" }[mode] || mode.toUpperCase();
+  pill.textContent = { example: "EXAMPLE", stub: "DEMO", live: "LIVE", cache: "CACHED" }[mode] || mode.toUpperCase();
   pill.className = `mode-pill mode-${mode}`;
 
   const banner = $("data-banner");
@@ -61,6 +61,8 @@ function render(report) {
       ? "Example data — illustrative only, not verified findings."
       : mode === "stub"
       ? "Demo results — the backend ran in stub mode. Nothing here is a real finding."
+      : mode === "cache"
+      ? `Replayed from a saved live scan (${report.cached_from?.generated_at || "earlier"}) — not re-checked now.`
       : "";
   banner.classList.toggle("hidden", mode === "live");
 
