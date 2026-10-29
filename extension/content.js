@@ -18,17 +18,45 @@
     const heading = `${h1} | ${title}`;
     const body = clean(document.body?.innerText).slice(0, 20000);
 
-    const bhkMatch = heading.match(/(\d+)\s*BHK/i) || body.match(/(\d+)\s*BHK/i);
+    const bhkElements = Array.from(
+        document.querySelectorAll("div.font-semibold")
+    );
+
+    const bhkText = bhkElements
+        .map((el) => clean(el.textContent))
+        .find((text) => /^\d+\s*BHK$/i.test(text));
+
+    const bhkMatch = bhkText
+        ? bhkText.match(/^(\d+)\s*BHK$/i)
+        : heading.match(/(\d+)\s*BHK/i);
+
     const bhk = bhkMatch ? parseInt(bhkMatch[1], 10) : null;
 
     // e.g. "2 BHK Flat For Rent In HSR Layout, Bangalore"
-    const locMatch = heading.match(/\bin\s+([A-Za-z0-9 .'-]+(?:,\s*[A-Za-z .'-]+)?)/i);
-    const locality = locMatch ? clean(locMatch[1]).replace(/\s*\|.*$/, "") : null;
+    const locMatch = heading.match(
+        /\bin\s+(.+?)(?=\s*(?:\||[-–]\s*NoBroker|Without Brokerage|$))/i
+    );
+
+    let locality = locMatch ? clean(locMatch[1]) : null;
+
+    if (locality) {
+        locality = locality.replace(/,\s*(?:Bangalore|Bengaluru).*$/i, "").trim();
+    }
 
     // e.g. "Rent ₹32,000" or "₹ 32,000 /month"
-    const rentMatch =
-      body.match(/Rent[^₹\d]{0,30}₹\s*([\d,]{4,})/i) ||
-      body.match(/₹\s*([\d,]{4,})\s*(?:\/\s*month|per month)/i);
+    // Find the Rent label and read the amount immediately above it.
+    const rentLabel = Array.from(document.querySelectorAll("div, span"))
+        .find((el) =>
+            clean(el.textContent) === "Rent" &&
+            el.parentElement
+        );
+
+    const rentContainer = rentLabel?.parentElement;
+    const rentText = rentContainer
+        ? clean(rentContainer.innerText)
+        : "";
+
+    const rentMatch = rentText.match(/₹\s*([\d,]+)/);
     const rent = rentMatch ? toNumber(rentMatch[1]) : null;
 
     return {
