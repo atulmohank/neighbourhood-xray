@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neighbourhood X-Ray — Bengaluru Rental Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom subtle scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .circular-progress {
+      background: conic-gradient(#f59e0b 0deg 208.8deg, #f1f5f9 208.8deg 360deg);
+    }
+    .pulse-dot {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: pulseGreen 2s infinite;
+    }
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+      70% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased h-screen overflow-hidden flex flex-col">
+
+  <!-- TOP BROWSER CHROME SIMULATION -->
+  <header class="bg-slate-900 text-slate-300 text-xs px-4 py-2 border-b border-slate-800 flex items-center justify-between shrink-0 select-none z-30">
+    <div class="flex items-center space-x-2">
+      <div class="flex space-x-1.5 mr-2">
+        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+      </div>
+      <div class="flex items-center space-x-1 text-slate-400">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </div>
+    </div>
+    
+    <div class="flex-1 max-w-xl mx-4 bg-slate-800/90 rounded-md py-1 px-3 flex items-center justify-between text-slate-300 border border-slate-700/60 shadow-inner">
+      <div class="flex items-center space-x-2 truncate">
+        <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        <span class="truncate text-slate-200">nobroker.in<span class="text-slate-400">/property/rent/bangalore/hsr-layout/2bhk-flat-sector-2</span></span>
+      </div>
+      <span class="text-[10px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-mono">PRO</span>
+    </div>
+
+    <!-- Active Extensions area -->
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-indigo-950/80 border border-indigo-500/40 text-indigo-300 text-[11px] font-medium">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 pulse-dot"></span>
+        <span>Side Panel Active</span>
+      </div>
+      <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+        BLR
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT: LISTING BACKDROP + 420px CHROME SIDE PANEL -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- LEFT: SIMULATED RENTAL LISTING PAGE (NoBroker / MagicBricks style) -->
+    <main class="flex-1 overflow-y-auto bg-slate-50 relative p-6 custom-scrollbar">
+      
+      <!-- FLOATING PILL BADGE INJECTED OVER LISTING -->
+      <aside aria-label="X-Ray Assessment Pill" class="fixed top-14 left-8 z-20 group">
+        <div class="flex items-center bg-white/95 backdrop-blur-md rounded-full shadow-xl border border-slate-200/90 pl-1.5 pr-4 py-1.5 space-x-3 transition-all hover:scale-105 hover:shadow-2xl hover:border-indigo-400 cursor-pointer">
+          <!-- Mini Score Ring -->
+          <div class="relative w-8 h-8 rounded-full flex items-center justify-center" style="background: conic-gradient(#f59e0b 0deg 208deg, #f1f5f9 208deg 360deg);">
+            <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center font-bold text-xs text-amber-700 font-mono-num shadow-inner">
+              58
+            </div>
+          </div>
+          <!-- Label -->
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="font-semibold text-slate-900 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Check before signing
+            </span>
+            <span class="text-slate-300">|</span>
+            <span class="text-slate-500 font-medium flex items-center gap-1 text-[11px]">
+              <svg class="w-3 h-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              31 sources
+            </span>
+          </div>
+          <!-- Arrow Indicator -->
+          <div class="bg-indigo-50 text-indigo-600 rounded-full p-1 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Listing Page Mock Content -->
+      <div class="max-w-4xl mx-auto pt-10 pb-16 space-y-6">
+        
+        <!-- Breadcrumb & Listing Header -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
+          <div class="text-xs text-slate-500 mb-2 flex items-center space-x-1.5">
+            <span>Bengaluru</span>
+            <span>&gt;</span>
+            <span>HSR Layout</span>
+            <span>&gt;</span>
+            <span class="text-slate-800 font-medium">Sector 2</span>
+          </div>
+
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Sunburst Meadows 2 BHK Semi-Furnished Flat</h1>
+                <span class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-0.5 rounded-full font-semibold border border-emerald-200">Verified Listing</span>
+              </div>
+              <p class="text-slate-500 text-sm mt-1 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                14th Main, 7th Cross, Sector 2, HSR Layout, Bengaluru 560102
+              </p>
+            </div>
+
+            <div class="text-right">
+              <div class="text-3xl font-extrabold text-slate-900 font-mono-num">₹32,000<span class="text-sm font-normal text-slate-500">/month</span></div>
+              <p class="text-xs text-slate-500 mt-0.5">Deposit: ₹1,50,000 · Maintenance: ₹2,500</p>
+            </div>
+          </div>
+
+          <!-- Quick specs badges -->
+          <div class="grid grid-cols-4 gap-3 mt-6 pt-5 border-t border-slate-100">
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <span class="text-[11px] text-slate-400 block font-medium">BHK & Super Builtup</span>
+              <span class="text-sm font-bold text-slate-800">2 BHK · 1,180 sq.ft</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <span class="text-[11px] text-slate-400 block font-medium">Floor</span>
+              <span class="text-sm font-bold text-slate-800">2nd of 4 Floors</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <span class="text-[11px] text-slate-400 block font-medium">Water Claim</span>
+              <span class="text-sm font-bold text-slate-800">"24x7 Water Supply"</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <span class="text-[11px] text-slate-400 block font-medium">Available From</span>
+              <span class="text-sm font-bold text-slate-800">Immediate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulated Photo Gallery -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2 h-64 bg-gradient-to-br from-slate-200 via-slate-300 to-indigo-100 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center shadow-inner group">
+            <div class="text-center p-6">
+              <div class="w-12 h-12 rounded-full bg-white/80 shadow mx-auto flex items-center justify-center text-slate-500 mb-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              </div>
+              <p class="text-sm font-semibold text-slate-700">Living Room & Balcony View</p>
+              <p class="text-xs text-slate-500">14 Photos Available</p>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3">
+            <div class="h-[122px] bg-slate-200 rounded-xl flex items-center justify-center border border-slate-300/80 text-xs text-slate-500 font-medium">
+              Master Bedroom (Wardrobes fitted)
+            </div>
+            <div class="h-[122px] bg-slate-200 rounded-xl flex items-center justify-center border border-slate-300/80 text-xs text-slate-500 font-medium">
+              Modular Kitchen & Utility
+            </div>
+          </div>
+        </div>
+
+        <!-- Listing Description snippet -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm space-y-3">
+          <h2 class="text-base font-bold text-slate-900">Owner Description</h2>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Beautiful east-facing 2 BHK flat situated in a prime quiet residential pocket of HSR Layout Sector 2. Very close to BDA complex, 27th Main food street, and Outer Ring Road tech parks. Has Cauvery water connection + dedicated borewell. Gated security, lift, power backup, covered car parking. Rent slightly negotiable for long-lease tenants.
+          </p>
+          <div class="flex gap-2 pt-2">
+            <span class="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg">Gated Society</span>
+            <span class="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg">Reserved Parking</span>
+            <span class="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg">Power Backup</span>
+            <span class="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg">Cauvery Line</span>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- RIGHT: 420px CHROME EXTENSION SIDE PANEL -->
+    <aside class="w-[420px] max-w-[420px] shrink-0 h-full bg-white border-l border-slate-200/90 shadow-2xl flex flex-col z-20 overflow-hidden">
+      
+      <!-- 1. SIDE PANEL HEADER -->
+      <div class="px-4 py-3 bg-white border-b border-slate-100 shrink-0">
+        <div class="flex items-center justify-between">
+          
+          <!-- Logo & Brand Name -->
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-500 p-0.5 shadow-sm shadow-indigo-200 flex items-center justify-center">
+              <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                <!-- X-Ray Crosshair / Scanning Aperture Logo -->
+                <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="8"/>
+                  <line x1="12" y1="2" x2="12" y2="6"/>
+                  <line x1="12" y1="18" x2="12" y2="22"/>
+                  <line x1="2" y1="12" x2="6" y2="12"/>
+                  <line x1="18" y1="12" x2="22" y2="12"/>
+                  <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center space-x-1.5">
+                <span class="font-bold text-[14px] text-slate-900 tracking-tight">Neighbourhood X-Ray</span>
+                <span class="bg-indigo-50 text-indigo-700 text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded border border-indigo-200">BLR</span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-none mt-0.5 truncate max-w-[170px]">HSR Sector 2 · 2 BHK</p>
+            </div>
+          </div>
+
+          <!-- Live Indicator & Controls -->
+          <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-1.5 bg-emerald-50/90 border border-emerald-200/80 px-2 py-1 rounded-full text-[11px] font-medium text-emerald-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span>
+              <span class="font-mono text-[10px] tracking-tight">Live · 42s ago</span>
+            </div>
+            <button class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Extension Settings">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 2. TAB BAR -->
+      <nav class="flex border-b border-slate-200/80 bg-slate-50/70 px-3 text-xs shrink-0 select-none">
+        <button class="relative py-2.5 px-3.5 font-bold text-indigo-600 flex items-center space-x-1.5 group">
+          <span>Overview</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+          <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full"></span>
+        </button>
+        <button class="py-2.5 px-3.5 font-semibold text-slate-500 hover:text-slate-800 transition-colors flex items-center space-x-1">
+          <span>Rent</span>
+          <span class="text-[9px] bg-slate-200/70 text-slate-600 px-1 rounded font-mono">₹</span>
+        </button>
+        <button class="py-2.5 px-3.5 font-semibold text-slate-500 hover:text-slate-800 transition-colors flex items-center space-x-1">
+          <span>Residents</span>
+          <span class="text-[9px] bg-slate-200/70 text-slate-600 px-1 rounded font-mono">14</span>
+        </button>
+        <button class="py-2.5 px-3.5 font-semibold text-slate-500 hover:text-slate-800 transition-colors flex items-center space-x-1.5">
+          <span>Ask</span>
+          <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+        </button>
+      </nav>
+
+      <!-- SCROLLABLE CONTENT AREA (Overview Tab) -->
+      <div class="flex-1 overflow-y-auto px-4 py-3.5 space-y-3.5 custom-scrollbar bg-slate-50/40">
+
+        <!-- 3. HERO SCORE CARD -->
+        <section class="bg-gradient-to-b from-white to-amber-50/30 rounded-2xl p-4 border border-amber-200/70 shadow-sm relative overflow-hidden">
+          <!-- Subtle background glow -->
+          <div class="absolute -top-12 -right-12 w-28 h-28 bg-amber-200/30 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div class="flex items-center space-x-4">
+            
+            <!-- Large Circular Score "58/100" -->
+            <div class="relative shrink-0">
+              <div class="w-20 h-20 rounded-full circular-progress flex items-center justify-center p-1.5 shadow-inner">
+                <div class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center shadow-sm">
+                  <div class="flex items-baseline justify-center">
+                    <span class="text-2xl font-black text-slate-900 font-mono-num tracking-tight">58</span>
+                    <span class="text-[11px] font-bold text-slate-400 ml-0.5">/100</span>
+                  </div>
+                  <span class="text-[9px] uppercase tracking-wider font-extrabold text-amber-600 -mt-0.5">Moderate</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Verdict & Meta -->
+            <div class="flex-1 min-w-0">
+              <div class="inline-flex items-center space-x-1.5 bg-amber-500/10 text-amber-800 border border-amber-300/80 px-2.5 py-1 rounded-full text-xs font-bold mb-1.5 shadow-xs">
+                <svg class="w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span class="truncate">Check before signing</span>
+              </div>
+              <p class="text-slate-800 text-[12.5px] leading-snug font-medium">
+                Frequent water cuts and rent above the area's fair range. Power is stable. One flooding report nearby.
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom quick metric badge in card -->
+          <div class="mt-3 pt-2.5 border-t border-amber-100 flex items-center justify-between text-[11px] text-slate-500">
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              Tenant Risk Index: <strong>Elevated</strong>
+            </span>
+            <span class="text-indigo-600 font-semibold cursor-pointer hover:underline">Full breakdown &rarr;</span>
+          </div>
+        </section>
+
+        <!-- 4. SOURCES CARD -->
+        <section class="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-xs space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-1.5">
+              <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+              <h2 class="text-xs font-bold text-slate-900 tracking-tight">Checked 31 live sources</h2>
+              <span class="text-[10px] text-slate-400 font-normal">in real time</span>
+            </div>
+            <a href="#scoring-methodology" class="text-[11px] text-indigo-600 hover:text-indigo-700 font-semibold hover:underline flex items-center gap-0.5">
+              <span>How we score</span>
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+          </div>
+
+          <!-- Source Chips with explicit counts -->
+          <div class="flex flex-wrap gap-1.5">
+            
+            <div class="inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-2 py-1 rounded-lg text-[11px] text-slate-700 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              <span class="font-bold text-slate-900 font-mono-num">9</span>
+              <span>BWSSB notices</span>
+            </div>
+
+            <div class="inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-2 py-1 rounded-lg text-[11px] text-slate-700 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span class="font-bold text-slate-900 font-mono-num">6</span>
+              <span>BESCOM schedules</span>
+            </div>
+
+            <div class="inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-2 py-1 rounded-lg text-[11px] text-slate-700 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
+              <span class="font-bold text-slate-900 font-mono-num">11</span>
+              <span>listings across 3 sites</span>
+            </div>
+
+            <div class="inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-2 py-1 rounded-lg text-[11px] text-slate-700 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              <span class="font-bold text-slate-900 font-mono-num">3</span>
+              <span>news reports</span>
+            </div>
+
+            <div class="inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-2 py-1 rounded-lg text-[11px] text-slate-700 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+              <span class="font-bold text-slate-900 font-mono-num">2</span>
+              <span>Reddit threads</span>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 5. AREA SCORES (HORIZONTAL BARS) -->
+        <section class="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h3 class="text-xs font-bold text-slate-900 tracking-tight">Area Pillar Scores</h3>
+            <span class="text-[10px] text-slate-400 font-mono">Radius: 600m</span>
+          </div>
+
+          <div class="space-y-2.5">
+            
+            <!-- Water supply: 35 (Red) -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <div class="flex items-center space-x-2">
+                  <div class="w-5 h-5 rounded-md bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                  </div>
+                  <span class="font-semibold text-slate-800">Water supply</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-[10px] text-rose-600 font-semibold bg-rose-50 px-1.5 py-0.2 rounded">Severe Deficit</span>
+                  <span class="font-bold font-mono-num text-xs text-rose-600">35</span>
+                  <span class="text-[10px] text-slate-400">/100</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-rose-500 h-2 rounded-full" style="width: 35%;"></div>
+              </div>
+            </div>
+
+            <!-- Power: 85 (Green) -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <div class="flex items-center space-x-2">
+                  <div class="w-5 h-5 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  </div>
+                  <span class="font-semibold text-slate-800">Power stability</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded">Excellent</span>
+                  <span class="font-bold font-mono-num text-xs text-emerald-600">85</span>
+                  <span class="text-[10px] text-slate-400">/100</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-emerald-500 h-2 rounded-full" style="width: 85%;"></div>
+              </div>
+            </div>
+
+            <!-- Flood risk: 62 (Amber) -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <div class="flex items-center space-x-2">
+                  <div class="w-5 h-5 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                  </div>
+                  <span class="font-semibold text-slate-800">Flood risk</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-[10px] text-amber-600 font-semibold bg-amber-50 px-1.5 py-0.2 rounded">Lowline Pocket</span>
+                  <span class="font-bold font-mono-num text-xs text-amber-600">62</span>
+                  <span class="text-[10px] text-slate-400">/100</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-amber-500 h-2 rounded-full" style="width: 62%;"></div>
+              </div>
+            </div>
+
+            <!-- Rent value: 48 (Amber) -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <div class="flex items-center space-x-2">
+                  <div class="w-5 h-5 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <span class="font-semibold text-slate-800">Rent value</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-[10px] text-amber-600 font-semibold bg-amber-50 px-1.5 py-0.2 rounded">+₹4.2k Above Median</span>
+                  <span class="font-bold font-mono-num text-xs text-amber-600">48</span>
+                  <span class="text-[10px] text-slate-400">/100</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-amber-500 h-2 rounded-full" style="width: 48%;"></div>
+              </div>
+            </div>
+
+            <!-- Water source: n/a (Grey, could not verify) -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <div class="flex items-center space-x-2">
+                  <div class="w-5 h-5 rounded-md bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <span class="font-semibold text-slate-600">Water source</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-[10px] text-slate-500 italic bg-slate-100 px-1.5 py-0.2 rounded">Could not verify Cauvery meter</span>
+                  <span class="font-bold font-mono-num text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">n/a</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-slate-300 h-2 rounded-full" style="width: 14%;"></div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 6. TWO COLUMNS: WHAT'S GOOD & WATCH OUT -->
+        <section class="grid grid-cols-2 gap-2.5">
+          
+          <!-- Column 1: What's good (Green ticks) -->
+          <div class="bg-white rounded-2xl p-3 border border-emerald-100 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center space-x-1.5 mb-2 pb-1.5 border-b border-emerald-50">
+                <div class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold">✓</div>
+                <h4 class="text-xs font-bold text-emerald-900 tracking-tight">What's good</h4>
+              </div>
+
+              <div class="space-y-2">
+                
+                <!-- Good item 1 -->
+                <div class="text-[11px] leading-tight">
+                  <div class="flex items-start gap-1 text-slate-700 font-medium">
+                    <span class="text-emerald-500 font-bold shrink-0">✓</span>
+                    <span>Zero unscheduled blackouts in 45 days.</span>
+                  </div>
+                  <div class="mt-1 pl-3 text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                    <span class="text-indigo-600 font-semibold cursor-pointer hover:underline">BESCOM Feeder #14B</span>
+                    <span>· Live log</span>
+                  </div>
+                </div>
+
+                <!-- Good item 2 -->
+                <div class="text-[11px] leading-tight pt-1.5 border-t border-slate-100">
+                  <div class="flex items-start gap-1 text-slate-700 font-medium">
+                    <span class="text-emerald-500 font-bold shrink-0">✓</span>
+                    <span>High pedestrian safety score; well-lit crossroad.</span>
+                  </div>
+                  <div class="mt-1 pl-3 text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                    <span class="text-indigo-600 font-semibold cursor-pointer hover:underline">Bengaluru Police Data</span>
+                    <span>· 2024</span>
+                  </div>
+                </div>
+
+                <!-- Good item 3 -->
+                <div class="text-[11px] leading-tight pt-1.5 border-t border-slate-100">
+                  <div class="flex items-start gap-1 text-slate-700 font-medium">
+                    <span class="text-emerald-500 font-bold shrink-0">✓</span>
+                    <span>3 grocery dark stores deliver under 9 mins.</span>
+                  </div>
+                  <div class="mt-1 pl-3 text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                    <span class="text-indigo-600 font-semibold cursor-pointer hover:underline">Blinkit / Zepto pin</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="mt-2 pt-1 text-[10px] text-emerald-700 font-semibold cursor-pointer hover:underline text-right">
+              +2 more verified pros
+            </div>
+          </div>
+
+          <!-- Column 2: Watch out (Red flags) -->
+          <div class="bg-white rounded-2xl p-3 border border-rose-100 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center space-x-1.5 mb-2 pb-1.5 border-b border-rose-50">
+                <div class="w-4 h-4 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-[10px] font-bold">!</div>
+                <h4 class="text-xs font-bold text-rose-900 tracking-tight">Watch out</h4>
+              </div>
+
+              <div class="space-y-2">
+                
+                <!-- Red flag item 1 -->
+                <div class="text-[11px] leading-tight">
+                  <div class="flex items-start gap-1 text-slate-800 font-medium">
+                    <span class="text-rose-500 font-bold shrink-0">✕</span>
+                    <span>6 water cuts in 30 days despite "24x7 water" claim.</span>
+                  </div>
+                  <div class="mt-1 pl-3 text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                    <span class="text-rose-700 bg-rose-50 px-1 py-0.2 rounded font-semibold cursor-pointer hover:underline">BWSSB Ward 174</span>
+                    <span>· Aug log</span>
+                  </div>
+                </div>
+
+                <!-- Red flag item 2 -->
+                <div class="text-[11px] leading-tight pt-1.5 border-t border-slate-100">
+                  <div class="flex items-start gap-1 text-slate-800 font-medium">
+                    <span class="text-rose-500 font-bold shrink-0">✕</span>
+                    <span>Rent ₹32k is ₹4k above Sector 2 2BHK median (₹28k).</span>
+                  </div>
+                  <div class="mt-1 pl-3 text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                    <span class="text-indigo-600 font-semibold cursor-pointer hover:underline">11 active listings</span>
+                    <span>· 3 sites</span>
+                  </div>
+                </div>
+
+                <!-- Red flag item 3 -->
+                <div class="text-[11px] leading-tight pt-1.5 border-t border-slate-100">
+                  <div class="flex items-start gap-1 text-slate-800 font-medium">
+                    <span class="text-rose-500 font-bold shrink-0">✕</span>
+                    <span>Ground floor water-logging reported in Sep 2023.</span>
+                  </div>
+                  <div class="mt-1 pl-3 text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                    <span class="text-orange-600 font-semibold cursor-pointer hover:underline">r/bangalore thread</span>
+                    <span>· 42 upvotes</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="mt-2 pt-1 text-[10px] text-rose-700 font-semibold cursor-pointer hover:underline text-right">
+              Inspect all 4 flags
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ASK AI QUICK PROMPT BOX AT BOTTOM OF OVERVIEW -->
+        <div class="bg-indigo-900 text-white rounded-2xl p-3.5 shadow-md border border-indigo-700/60 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-bold text-indigo-200 uppercase tracking-wider flex items-center gap-1">
+              <svg class="w-3 h-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Ask X-Ray Assistant
+            </span>
+            <span class="text-[10px] bg-indigo-800/80 text-indigo-200 px-2 py-0.5 rounded-full font-mono">r/bangalore + BBMP trained</span>
+          </div>
+          <p class="text-xs text-indigo-100 font-medium mb-2.5">
+            "Should I negotiate the rent down, or is tanker reliance common here?"
+          </p>
+          <div class="flex items-center gap-1.5">
+            <input type="text" placeholder="Ask anything about this flat or lane..." class="flex-1 bg-indigo-950/90 text-xs px-3 py-1.5 rounded-xl border border-indigo-700/60 text-slate-200 placeholder-indigo-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400" />
+            <button class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-xl transition-colors shrink-0">
+              Ask
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER ACTION BAR INSIDE EXTENSION PANEL -->
+      <footer class="p-3 bg-white border-t border-slate-200 shrink-0 flex items-center justify-between gap-2">
+        <button class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-2 px-3 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Export Due Diligence PDF</span>
+        </button>
+        <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-xl border border-slate-200 transition-colors" title="Bookmark Property">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+        </button>
+        <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-xl border border-slate-200 transition-colors" title="Share with Flatmates">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+        </button>
+      </footer>
+
+    </aside>
+
+  </div>
+
+</body>
+</html>

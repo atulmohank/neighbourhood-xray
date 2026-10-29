@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Neighbourhood X-Ray",
+  "version": "0.1.0",
+  "description": "Investigate a neighbourhood before renting a flat.",
+  "permissions": ["sidePanel", "storage", "activeTab"],
+  "host_permissions": [
+    "https://www.nobroker.in/*",
+    "http://localhost:8000/*",
+    "http://127.0.0.1:8000/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "action": { "default_title": "Open Neighbourhood X-Ray" },
+  "content_scripts": [
+    {
+      "matches": ["https://www.nobroker.in/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

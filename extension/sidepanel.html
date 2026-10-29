@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neighbourhood X-Ray</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="panel-head">
+    <div class="brand">
+      <div class="logo">X</div>
+      <div>
+        <div class="brand-name">Neighbourhood X-Ray</div>
+        <div class="brand-sub mono" id="listing-sub">No listing yet</div>
+      </div>
+    </div>
+    <span class="mode-pill" id="mode-pill">EXAMPLE</span>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="overview" role="tab">Overview</button>
+    <button class="tab" data-tab="rent" role="tab">Rent <span class="tab-badge mono" id="rent-badge"></span></button>
+    <button class="tab" data-tab="residents" role="tab">Residents <span class="tab-badge mono" id="residents-badge"></span></button>
+    <button class="tab" data-tab="ask" role="tab">Ask</button>
+  </nav>
+
+  <main>
+    <div class="data-banner" id="data-banner"></div>
+
+    <section class="card scan-card">
+      <div class="label-row"><span class="label">Listing</span><span class="label" id="extract-state"></span></div>
+      <label class="field">
+        <span>Locality</span>
+        <input id="in-locality" type="text" placeholder="e.g. HSR Layout Sector 2, Bengaluru" autocomplete="off">
+      </label>
+      <div class="field-row">
+        <label class="field"><span>Rent (₹/month)</span><input id="in-rent" type="number" min="0" inputmode="numeric"></label>
+        <label class="field"><span>BHK</span><input id="in-bhk" type="number" min="0" max="20" inputmode="numeric"></label>
+      </div>
+      <div class="scan-actions">
+        <button class="btn" id="btn-scan">Scan neighbourhood</button>
+        <button class="btn ghost" id="btn-example">Show example</button>
+      </div>
+      <div class="progress hidden" id="progress">
+        <div class="progress-head"><span class="label" id="progress-label">Starting…</span><span class="mono" id="progress-count"></span></div>
+        <div class="bar"><div class="bar-fill" id="progress-fill"></div></div>
+        <ul class="progress-list" id="progress-list"></ul>
+      </div>
+      <p class="error hidden" id="scan-error"></p>
+    </section>
+
+    <div class="view" id="view-overview"></div>
+    <div class="view hidden" id="view-rent"></div>
+    <div class="view hidden" id="view-residents"></div>
+    <div class="view hidden" id="view-ask"></div>
+  </main>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

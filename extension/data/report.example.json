@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1.0",
+  "data_mode": "example",
+  "disclaimer": "ILLUSTRATIVE EXAMPLE DATA. Every value in this file is made up to show the shape of the report contract and to match the UI design mock-up. None of it is a verified real-world finding about any locality, listing, person or website.",
+  "scan_id": "example-0001",
+  "generated_at": "2026-10-29T10:00:00Z",
+  "duration_seconds": 42,
+  "listing": {
+    "locality": "HSR Layout Sector 2, Bengaluru",
+    "rent": 32000,
+    "bhk": 2,
+    "source": "nobroker",
+    "listing_url": "https://www.nobroker.in/property/rent/bangalore/hsr-layout/2bhk-sector-2"
+  },
+  "score": 58,
+  "verdict": "Check before signing",
+  "summary": "Frequent water cuts and rent above the area's fair range. Power is stable. One flooding report nearby.",
+  "sources_count": 31,
+  "sources": [
+    { "id": "bwssb", "label": "BWSSB notices", "count": 9 },
+    { "id": "bescom", "label": "BESCOM schedules", "count": 6 },
+    { "id": "listings", "label": "listings · 3 sites", "count": 11 },
+    { "id": "news", "label": "news reports", "count": 3 },
+    { "id": "reddit", "label": "Reddit threads", "count": 2 }
+  ],
+  "area_scores": [
+    { "id": "water_supply", "label": "Water supply", "score": 35, "level": "risk", "tag": "Severe deficit", "status": "verified" },
+    { "id": "power", "label": "Power", "score": 85, "level": "good", "tag": "Stable", "status": "verified" },
+    { "id": "flood_risk", "label": "Flood risk", "score": 62, "level": "watch", "tag": "Low-lying pocket", "status": "verified" },
+    { "id": "rent_value", "label": "Rent value", "score": 48, "level": "watch", "tag": "+₹4k vs median", "status": "verified" },
+    { "id": "water_source", "label": "Water source", "score": null, "level": "unknown", "tag": "Could not verify", "status": "could_not_verify" }
+  ],
+  "checks": [
+    {
+      "id": "water_supply",
+      "status": "verified",
+      "headline": "6 water cuts in 30 days despite \"24×7\" claim",
+      "details": [
+        "Example: 6 unplanned supply interruptions listed for this ward in the last 30 days.",
+        "Example: 4 of them linked to pipeline work on 27th Main."
+      ],
+      "source_url": "https://example.com/bwssb/notices",
+      "fetched_at": "2026-10-29T09:59:21Z"
+    },
+    {
+      "id": "power",
+      "status": "verified",
+      "headline": "Only 2 planned power cuts in 30 days",
+      "details": ["Example: both were scheduled maintenance windows under 3 hours."],
+      "source_url": "https://example.com/bescom/schedule",
+      "fetched_at": "2026-10-29T09:59:30Z"
+    },
+    {
+      "id": "flood_risk",
+      "status": "verified",
+      "headline": "One flooding report nearby; none inside Sector 2 this year",
+      "details": [
+        "Example: 27th Main underpass reported flooded after heavy rain.",
+        "Example: 3 news reports checked."
+      ],
+      "source_url": "https://example.com/news/flooding",
+      "fetched_at": "2026-10-29T09:59:38Z"
+    },
+    {
+      "id": "rent_value",
+      "status": "verified",
+      "headline": "₹4k above the 2 BHK median",
+      "details": ["Example: 11 comparable listings across 3 sites; median ₹28,000."],
+      "source_url": "https://example.com/listings/search",
+      "fetched_at": "2026-10-29T09:59:45Z"
+    },
+    {
+      "id": "water_source",
+      "status": "could_not_verify",
+      "headline": "Could not verify water source",
+      "details": ["No source said whether the building uses Cauvery, borewell or tanker water."],
+      "source_url": null,
+      "fetched_at": "2026-10-29T09:59:58Z"
+    }
+  ],
+  "good": [
+    { "text": "Only 2 planned power cuts in 30 days", "source_label": "BESCOM schedule", "source_url": "https://example.com/bescom/schedule" },
+    { "text": "No flooding inside Sector 2 this year", "source_label": "3 news checked", "source_url": "https://example.com/news/flooding" }
+  ],
+  "watch_out": [
+    { "text": "6 water cuts in 30 days despite \"24×7\"", "source_label": "BWSSB notices", "source_url": "https://example.com/bwssb/notices" },
+    { "text": "₹4k above 2 BHK median", "source_label": "11 listings", "source_url": "https://example.com/listings/search" }
+  ],
+  "rent_compare": {
+    "status": "verified",
+    "currency": "INR",
+    "listing_rent": 32000,
+    "fair_range": { "low": 26000, "high": 29000 },
+    "median": 28000,
+    "premium_percent": 14.3,
+    "monthly_extra": 4000,
+    "yearly_overpay": 48000,
+    "spread": { "min": 22000, "max": 36000, "n": 11 },
+    "portals": [
+      { "name": "MagicBricks", "median": 27000, "listings": 4, "source_url": "https://example.com/portal-a/search" },
+      { "name": "NoBroker", "median": 28500, "listings": 5, "source_url": "https://example.com/portal-b/search" },
+      { "name": "Housing.com", "median": 29000, "listings": 2, "source_url": "https://example.com/portal-c/search" }
+    ],
+    "cheapest_comparable": {
+      "rent": 26500,
+      "bhk": 2,
+      "area_sqft": 1100,
+      "locality": "HSR Layout Sector 2, Bengaluru",
+      "distance_m": 400,
+      "note": "Zero brokerage",
+      "portal": "MagicBricks",
+      "monthly_saving": 5500,
+      "source_url": "https://example.com/portal-a/listing/123"
+    },
+    "fetched_at": "2026-10-29T09:59:45Z"
+  },
+  "residents": {
+    "status": "verified",
+    "window": "6 months",
+    "total_mentions": 26,
+    "themes": [
+      { "id": "water", "label": "Water / tankers", "mentions": 14, "sentiment": "negative" },
+      { "id": "roads", "label": "Road digging", "mentions": 6, "sentiment": "negative" },
+      { "id": "flooding", "label": "Waterlogging", "mentions": 4, "sentiment": "negative" },
+      { "id": "noise", "label": "Noise", "mentions": 2, "sentiment": "negative" }
+    ],
+    "quotes": [
+      {
+        "text": "Example quote: No Cauvery water for 4 days in Sector 2. Paid ₹900 a tanker.",
+        "theme": "water",
+        "source": "Reddit · r/bangalore",
+        "source_url": "https://example.com/reddit/thread/1",
+        "posted_at": "2026-10-08"
+      },
+      {
+        "text": "Example quote: The 27th Main underpass flooded again after Sunday's rain.",
+        "theme": "flooding",
+        "source": "News",
+        "source_url": "https://example.com/news/underpass",
+        "posted_at": "2026-09-15"
+      },
+      {
+        "text": "Example quote: Power is rarely an issue here. Better than Bellandur.",
+        "theme": "power",
+        "source": "Reddit",
+        "source_url": "https://example.com/reddit/thread/2",
+        "posted_at": "2026-08-20"
+      }
+    ]
+  },
+  "questions_for_owner": [
+    "How many tanker loads a month in summer?",
+    "Is there a sump or overhead tank backup?",
+    "Did the building flood in September?",
+    "Would you do ₹28k, given the area median?"
+  ]
+}
