@@ -2,199 +2,294 @@
   "schema_version": "0.1.0",
   "data_mode": "live",
   "disclaimer": "",
-  "scan_id": "7c98d84ab224",
-  "generated_at": "2026-10-29T17:45:33Z",
-  "duration_seconds": 13.6,
+  "scan_id": "748fcfdb0827",
+  "generated_at": "2026-10-29T19:36:35Z",
+  "duration_seconds": 15.2,
   "listing": {
-    "locality": "Sobha Daffodil, HSR Layout, Bengaluru",
-    "rent": 40000,
+    "locality": "Banashankari 3rd Stage, Banashankari",
+    "rent": 26000,
     "bhk": 2,
-    "listing_url": "https://www.magicbricks.com/propertyDetails/2-BHK-1198-Sq-ft-Multistorey-Apartment-FOR-Rent-HSR-Layout-in-Bangalore&id=4d423837313431363439",
-    "listing_text": null,
-    "source": "magicbricks"
+    "listing_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-3rd-stage-banashankari-bangalore-for-rs-26000/8aa9b093a0e86fc401a0eb23fcaa24b3/detail",
+    "source": "nobroker"
   },
-  "score": 90,
+  "score": 82,
   "verdict": "Looks good",
-  "summary": "The flat scores 90 and “Looks good”. Flood risk is confirmed with four vulnerable spots in the HSR Layout ward. Rent of ₹40,000 is 9 % below the ₹44,000 median for 2 BHKs. Water cuts, power cuts and the water source could not be verified.",
+  "checked_count": 5,
+  "unverified_checks": [],
+  "summary": "The neighbourhood scores 82 and the verdict is “Looks good.” Recent data show no water cuts in the last 30 days, one power cut in the last 30 days, rent ₹26,000 is 13 % below the local 2 BHK median, and the listing claims both corporation and borewell supply. No flood‑vulnerable spot is listed, though the ward name may be outdated, and the water‑source claim cannot be confirmed for this building.",
   "sources_count": 5,
   "sources": [],
   "area_scores": [
     {
       "id": "water_cuts",
       "label": "Water supply",
-      "score": null,
-      "level": "unknown",
-      "tag": "Could not verify",
-      "status": "could_not_verify"
+      "score": 70,
+      "level": "good",
+      "tag": "0 in 30d · 3 in 12m",
+      "status": "verified"
     },
     {
       "id": "power_cuts",
       "label": "Power",
-      "score": null,
-      "level": "unknown",
-      "tag": "Could not verify",
-      "status": "could_not_verify"
+      "score": 48,
+      "level": "watch",
+      "tag": "1 in 30d · 6 in 12m",
+      "status": "verified"
     },
     {
       "id": "flooding",
       "label": "Flood risk",
-      "score": 60,
-      "level": "watch",
-      "tag": "4 official flood spots",
-      "status": "verified"
+      "score": 100,
+      "level": "good",
+      "tag": "None listed",
+      "status": "no_reports"
     },
     {
       "id": "rent_compare",
       "label": "Rent value",
       "score": 100,
       "level": "good",
-      "tag": "-9% vs median",
+      "tag": "-13% vs median",
       "status": "verified"
     },
     {
       "id": "water_source",
       "label": "Water source",
-      "score": null,
-      "level": "unknown",
-      "tag": "Could not verify",
-      "status": "could_not_verify"
+      "score": 100,
+      "level": "good",
+      "tag": "Municipal (per listing)",
+      "status": "verified"
     }
   ],
   "checks": [
     {
       "id": "water_cuts",
-      "status": "could_not_verify",
-      "headline": "Could not verify water cuts",
+      "status": "verified",
+      "headline": "No water cuts in last 30 days · 3 news reports in past 12 months (latest 22 Sep 2026)",
       "details": [
-        "No official BWSSB notice naming HSR since 2026-09-29 (latest notice on the page: 2026-07-27).",
-        "No news report naming HSR since 2026-09-29 (1 articles checked)."
+        "News report — Oneindia, 22 Sep 2026: Bengaluru Water Supply Cut: These Areas May Face Cauvery Water Disruption Today (https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html)",
+        "News report — The Times of India, 21 Sep 2026: South Bengaluru to face Cauvery water supply disruption today (https://timesofindia.indiatimes.com/city/bengaluru/south-bengaluru-to-face-cauvery-water-supply-disruption-today/articleshow/134395826.cms)",
+        "News report — Goodreturns, 4 Feb 2026: Bengaluru Water Shutdown: BWSSB to Halt Cauvery Supply for 24 Hours for Essential Maintenance (https://www.goodreturns.in/news/bengaluru-water-shutdown-bwssb-halts-cauvery-supply-for-24-hours-011-1486929.html)",
+        "Official BWSSB page read (page HTML): 2 notices in the past 12 months, 0 naming Banashankari; page last updated 31 Jul 2026.",
+        "2 official notices in the window could not be read (scanned image or legacy-font Kannada), so their area lists are incomplete: Water Shutdown on 31-07-2026. · 27.07.2026 (31 Jul 2026); Water Shutdown on 22-07-2026. · 20.07.2026 (22 Jul 2026)",
+        "News: 3 reports naming Banashankari in 12 months (5 articles checked)."
       ],
-      "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en",
-      "fetched_at": "2026-10-29T17:45:28Z"
+      "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html",
+      "fetched_at": "2026-10-29T19:36:32Z",
+      "findings": [
+        {
+          "kind": "news",
+          "title": "Bengaluru Water Supply Cut: These Areas May Face Cauvery Water Disruption Today",
+          "date": "2026-09-22",
+          "publisher": "Oneindia",
+          "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html",
+          "label": "News report — Oneindia",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "title": "South Bengaluru to face Cauvery water supply disruption today",
+          "date": "2026-09-21",
+          "publisher": "The Times of India",
+          "source_url": "https://timesofindia.indiatimes.com/city/bengaluru/south-bengaluru-to-face-cauvery-water-supply-disruption-today/articleshow/134395826.cms",
+          "label": "News report — The Times of India",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "title": "Bengaluru Water Shutdown: BWSSB to Halt Cauvery Supply for 24 Hours for Essential Maintenance",
+          "date": "2026-02-04",
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-water-shutdown-bwssb-halts-cauvery-supply-for-24-hours-011-1486929.html",
+          "label": "News report — Goodreturns",
+          "window": "12m"
+        }
+      ]
     },
     {
       "id": "power_cuts",
-      "status": "could_not_verify",
-      "headline": "Could not verify power cuts",
+      "status": "verified",
+      "headline": "1 power cut in last 30 days (1 news report) · 5 news reports in past 12 months (latest 29 Oct 2026)",
       "details": [
-        "No official BESCOM notice naming HSR since 2026-09-29 (latest notice on the page: JULY 2026).",
-        "No news report naming HSR since 2026-09-29 (2 articles checked)."
+        "News report — Urban Acres, 29 Oct 2026: Bengaluru Power Cut: 50+ Areas Affected on October 31 (https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/)",
+        "News report — Times Now, 22 Jul 2026: Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas (https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029)",
+        "News report — Goodreturns, 24 Jun 2026: Bengaluru Power Cut Today: BESCOM Announce Power Outages Of 7-Hours On June 24; Check Affected Areas (https://www.goodreturns.in/news/bengaluru-power-cut-today-bescom-announce-power-outages-of-7-hours-on-june-24-check-affected-areas-1517769.html)",
+        "News report — The Hindu, 20 Jun 2026: Power cut to hit several areas in Bengaluru on June 20 (https://www.thehindu.com/news/cities/bangalore/power-cuts-to-hit-several-areas-in-bengaluru-on-june-20-bescom-issues-alert/article71123332.ece)",
+        "News report — News18, 24 Mar 2026: Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week (https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html)",
+        "News report — NewsFirst Prime, 20 Dec 2025: Bengaluru to face power outage today as KPTCL takes up emergency maintenance (https://newsfirstprime.com/bengaluru/bengaluru-to-face-power-outage-today-as-kptcl-takes-up-emergency-maintenance-10925649)",
+        "Official BESCOM page read (page HTML): 5 notices in the past 12 months, 0 naming Banashankari; page last updated 1 Jul 2026.",
+        "2 official notices in the window could not be read (scanned image or legacy-font Kannada), so their area lists are incomplete: FY 2025-26 · Contingency Power Outages details of BESCOM (31 Mar 2026); JULY 2026 · Contingency Power Outages details of BESCOM (1 Jul 2026)",
+        "News: 6 reports naming Banashankari in 12 months (13 articles checked)."
       ],
-      "source_url": "https://bescom.karnataka.gov.in/421/Contingency-Power-Outages/en",
-      "fetched_at": "2026-10-29T17:45:26Z"
+      "source_url": "https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/",
+      "fetched_at": "2026-10-29T19:36:35Z",
+      "findings": [
+        {
+          "kind": "news",
+          "title": "Bengaluru Power Cut: 50+ Areas Affected on October 31",
+          "date": "2026-10-29",
+          "publisher": "Urban Acres",
+          "source_url": "https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/",
+          "label": "News report — Urban Acres",
+          "window": "30d"
+        },
+        {
+          "kind": "news",
+          "title": "Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas",
+          "date": "2026-07-22",
+          "publisher": "Times Now",
+          "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029",
+          "label": "News report — Times Now",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "title": "Bengaluru Power Cut Today: BESCOM Announce Power Outages Of 7-Hours On June 24; Check Affected Areas",
+          "date": "2026-06-24",
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-bescom-announce-power-outages-of-7-hours-on-june-24-check-affected-areas-1517769.html",
+          "label": "News report — Goodreturns",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "title": "Power cut to hit several areas in Bengaluru on June 20",
+          "date": "2026-06-20",
+          "publisher": "The Hindu",
+          "source_url": "https://www.thehindu.com/news/cities/bangalore/power-cuts-to-hit-several-areas-in-bengaluru-on-june-20-bescom-issues-alert/article71123332.ece",
+          "label": "News report — The Hindu",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "title": "Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week",
+          "date": "2026-03-24",
+          "publisher": "News18",
+          "source_url": "https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html",
+          "label": "News report — News18",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "title": "Bengaluru to face power outage today as KPTCL takes up emergency maintenance",
+          "date": "2025-12-20",
+          "publisher": "NewsFirst Prime",
+          "source_url": "https://newsfirstprime.com/bengaluru/bengaluru-to-face-power-outage-today-as-kptcl-takes-up-emergency-maintenance-10925649",
+          "label": "News report — NewsFirst Prime",
+          "window": "12m"
+        }
+      ]
     },
     {
       "id": "flooding",
-      "status": "verified",
-      "headline": "HSR Layout ward has 4 officially flood-vulnerable spots (as of 27 Nov 2025)",
+      "status": "no_reports",
+      "headline": "No official flood-vulnerable spot listed for this ward (as of 27 Nov 2025)",
       "details": [
-        "HSR sector 2 Garden layout (ward HSR Layout)",
-        "HSR 3rd sector lead off drains (ward HSR Layout)",
-        "Sector 6 lead off drains surrounding 5th and 9th main (ward HSR Layout)",
-        "HSR layout 9th and 5th main (ward HSR Layout)",
+        "No flood-vulnerable spot listed for 'Banashankari 3rd Stage, Banashankari' in the official list. The list uses old BBMP ward names, so a renamed ward may be missed.",
         "Source: BBMP/KSRSAC flood-vulnerable locations (OpenCity), dataset updated 27 Nov 2025; lists vulnerable spots, not dated incidents."
       ],
       "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban",
-      "fetched_at": "2026-10-29T17:45:19Z"
+      "fetched_at": "2026-10-29T19:36:20Z"
     },
     {
       "id": "rent_compare",
       "status": "verified",
-      "headline": "Rent ₹40,000 is 9% below the ₹44,000 median for 2 BHK in HSR Layout (46 listings, NoBroker + MagicBricks)",
+      "headline": "Rent ₹26,000 is 13% below the ₹30,000 median for 2 BHK in Banashankari (44 listings, NoBroker + MagicBricks)",
       "details": [
-        "Middle half of listed rents: ₹32,250–₹55,000; range ₹14,000–₹70,000.",
-        "NoBroker: median ₹33,000 across 17 listings (https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore)",
-        "MagicBricks: median ₹50,000 across 29 listings (https://www.magicbricks.com/2-bhk-flats-for-rent-in-hsr-layout-bangalore-pppfr)",
-        "Cheapest comparable: ₹14,000 in Hsr Layout (https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-bangalore-for-rs-14000/8aa99a8ea11992b801a11a4ca8af7715/detail)",
-        "Listings as advertised today via TinyFish Fetch; not adjusted for size or furnishing."
+        "Middle half of listed rents: ₹19,950–₹36,000; range ₹15,000–₹46,000.",
+        "NoBroker: median ₹18,000 across 15 listings (https://www.nobroker.in/2bhk-flats-for-rent-in-banashankari_bangalore)",
+        "MagicBricks: median ₹31,500 across 29 listings (https://www.magicbricks.com/2-bhk-flats-for-rent-in-banashankari-bangalore-pppfr)",
+        "Cheapest comparable: ₹15,000 in Banashankari (https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-bangalore-for-rs-15000/8a9fad95817a208701817a720d8a35a5/detail)",
+        "Listings as advertised today via TinyFish Fetch; not adjusted for size or furnishing.",
+        "Dropped 3 outlier listings outside 50%-200% of the median (₹9,000, ₹10,000, ₹13,000)."
       ],
-      "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore",
-      "fetched_at": "2026-10-29T17:45:25Z"
+      "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-banashankari_bangalore",
+      "fetched_at": "2026-10-29T19:36:24Z"
     },
     {
       "id": "water_source",
-      "status": "could_not_verify",
-      "headline": "Could not verify water source",
+      "status": "verified",
+      "headline": "Listing says: \"Water Supply Both Corporation and Borewell\" (municipal supply, per owner)",
       "details": [
-        "The listing does not say where the water comes from.",
-        "Area-level context only: 'HSR Sector 1st to 7th sector' is listed under BWSSB Cauvery Stage 4 Ph 1 (OpenCity dataset updated 27 Nov 2025). This does not show that this building is connected or that supply is adequate."
+        "Listing text: …ell ##### Facing ##### North Corporation and Borewell ##### Water Supply ##### Both Corporation and Borewell ##### No. of Floors ##### 2/3 Corporation and Borewell ####…",
+        "Area-level context only: 'Banashankari' is listed under BWSSB Cauvery Stage 2 (OpenCity dataset updated 27 Nov 2025). This does not show that this building is connected or that supply is adequate."
       ],
-      "source_url": "https://data.opencity.in/dataset/bwssb-stage-wise-cauvery-water-supply-areas",
-      "fetched_at": "2026-10-29T17:45:33Z"
+      "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-3rd-stage-banashankari-bangalore-for-rs-26000/8aa9b093a0e86fc401a0eb23fcaa24b3/detail",
+      "fetched_at": "2026-10-29T19:36:21Z"
     }
   ],
   "good": [
     {
-      "text": "Rent ₹40,000 is 9% below the ₹44,000 median for 2 BHK in HSR Layout (46 listings, NoBroker + MagicBricks)",
+      "text": "No water cuts in last 30 days · 3 news reports in past 12 months (latest 22 Sep 2026)",
       "source_label": null,
-      "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore"
-    }
-  ],
-  "watch_out": [
-    {
-      "text": "Could not verify water cuts",
-      "source_label": null,
-      "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en"
+      "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html"
     },
     {
-      "text": "Could not verify power cuts",
-      "source_label": null,
-      "source_url": "https://bescom.karnataka.gov.in/421/Contingency-Power-Outages/en"
-    },
-    {
-      "text": "HSR Layout ward has 4 officially flood-vulnerable spots (as of 27 Nov 2025)",
+      "text": "No official flood-vulnerable spot listed for this ward (as of 27 Nov 2025)",
       "source_label": null,
       "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
     },
     {
-      "text": "Could not verify water source",
+      "text": "Rent ₹26,000 is 13% below the ₹30,000 median for 2 BHK in Banashankari (44 listings, NoBroker + MagicBricks)",
       "source_label": null,
-      "source_url": "https://data.opencity.in/dataset/bwssb-stage-wise-cauvery-water-supply-areas"
+      "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-banashankari_bangalore"
+    },
+    {
+      "text": "Listing says: \"Water Supply Both Corporation and Borewell\" (municipal supply, per owner)",
+      "source_label": null,
+      "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-3rd-stage-banashankari-bangalore-for-rs-26000/8aa9b093a0e86fc401a0eb23fcaa24b3/detail"
+    }
+  ],
+  "watch_out": [
+    {
+      "text": "1 power cut in last 30 days (1 news report) · 5 news reports in past 12 months (latest 29 Oct 2026)",
+      "source_label": null,
+      "source_url": "https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/"
     }
   ],
   "rent_compare": {
     "status": "verified",
     "currency": "INR",
-    "listing_rent": 40000,
+    "listing_rent": 26000,
     "fair_range": {
-      "low": 32250,
-      "high": 55000
+      "low": 19950,
+      "high": 36000
     },
-    "median": 44000,
-    "premium_percent": -9.1,
+    "median": 30000,
+    "premium_percent": -13.3,
     "monthly_extra": 0,
     "yearly_overpay": 0,
     "spread": {
-      "min": 14000,
-      "max": 70000,
-      "n": 46
+      "min": 15000,
+      "max": 46000,
+      "n": 44
     },
     "portals": [
       {
         "name": "NoBroker",
-        "median": 33000,
-        "listings": 17,
-        "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore"
+        "median": 18000,
+        "listings": 15,
+        "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-banashankari_bangalore"
       },
       {
         "name": "MagicBricks",
-        "median": 50000,
+        "median": 31500,
         "listings": 29,
-        "source_url": "https://www.magicbricks.com/2-bhk-flats-for-rent-in-hsr-layout-bangalore-pppfr"
+        "source_url": "https://www.magicbricks.com/2-bhk-flats-for-rent-in-banashankari-bangalore-pppfr"
       }
     ],
     "cheapest_comparable": {
-      "rent": 14000,
+      "rent": 15000,
       "bhk": 2,
       "area_sqft": null,
-      "locality": "Hsr Layout",
+      "locality": "Banashankari",
       "distance_m": null,
       "note": null,
       "portal": "NoBroker",
-      "monthly_saving": 26000,
-      "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-bangalore-for-rs-14000/8aa99a8ea11992b801a11a4ca8af7715/detail"
+      "monthly_saving": 11000,
+      "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-bangalore-for-rs-15000/8a9fad95817a208701817a720d8a35a5/detail"
     },
-    "fetched_at": "2026-10-29T17:45:25Z"
+    "fetched_at": "2026-10-29T19:36:24Z"
   },
   "residents": {
     "status": "could_not_verify",
@@ -204,10 +299,7 @@
     "quotes": []
   },
   "questions_for_owner": [
-    "How often does the water supply stop, and for how long?",
-    "How often does the power go out, and is there backup?",
-    "Has the street or building flooded during recent monsoons?",
-    "Is the water from the municipal line, a borewell or tankers?"
+    "How often does the power go out, and is there backup?"
   ],
   "summary_method": "llm"
 }

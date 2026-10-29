@@ -21,7 +21,9 @@ CHECK_ID = "water_source"
 
 # Free text, plus NoBroker's "Water Supply: Corporation | Borewell | Both" field.
 MUNICIPAL_RE = re.compile(
-    r"\b(cauvery|kaveri|bwssb|corporation water|municipal water)\b|water supply\W+(corporation|both)\b", re.I
+    r"\b(cauvery|kaveri|bwssb|corporation water|municipal water)\b"
+    r"|water supply\W+(corporation|both(\W+corporation\W+and\W+borewell)?)\b",
+    re.I,
 )
 PRIVATE_RE = re.compile(r"\b(bore\s?well|tankers?)\b", re.I)
 

@@ -299,7 +299,7 @@ def official_events(data: dict[str, Any], words: list[str], since: date) -> tupl
         notice_date = parse_date(n["date"])
         docs = n.get("documents", [])
         readable = [d for d in docs if d.get("readable")]
-        if docs and not readable:
+        if docs and len(readable) < len(docs):  # any unread document leaves the area list incomplete
             unreadable.append(n)
         matched_dates = set()
         for d in readable:
@@ -402,7 +402,7 @@ async def run_notices_check(
         if unreadable:
             lines.append(
                 f"{len(unreadable)} official notice{'s' * (len(unreadable) != 1)} in the window could not be read "
-                "(scanned image), so their areas are unknown: "
+                "(scanned image or legacy-font Kannada), so their area lists are incomplete: "
                 + "; ".join(f"{n['title']} ({fmt_day(n['date'])})" for n in unreadable)
             )
 
@@ -438,7 +438,7 @@ async def run_notices_check(
         if unreadable:
             # Don't let unreadable notices read as "nothing here".
             headline += (f" · {len(unreadable)} official notice{'s' * (len(unreadable) != 1)} "
-                         "couldn't be read (scanned)")
+                         "couldn't be fully read")
         return no_reports(
             check_id,
             headline,

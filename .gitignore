@@ -20,9 +20,10 @@ env/
 backend/cache/*
 !backend/cache/.gitkeep
 !backend/cache/latest.json
-!backend/cache/rajiv-gandhi-nagar-hsr-layout-sector-7-bengaluru.json
-!backend/cache/hsr-layout-sector-2-bengaluru.json
-!backend/cache/sobha-daffodil-hsr-layout-bengaluru.json
+!backend/cache/rajiv-gandhi-nagar-7th-sector-hsr-layout.json
+!backend/cache/sector-2-hsr-layout.json
+!backend/cache/sobha-daffodil-hsr-layout.json
+!backend/cache/banashankari-3rd-stage-banashankari.json
 
 # OS / editor
 .DS_Store

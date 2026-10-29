@@ -172,7 +172,9 @@ def save_to_cache(report: dict[str, Any]) -> None:
     """Keep the last successful live scan per locality, plus latest.json, for offline demos."""
     try:
         CACHE_DIR.mkdir(exist_ok=True)
-        body = json.dumps(report, indent=2, ensure_ascii=False)
+        # The raw listing page text isn't needed for replay and can contain owner/agent names.
+        saved = {**report, "listing": {k: v for k, v in report["listing"].items() if k != "listing_text"}}
+        body = json.dumps(saved, indent=2, ensure_ascii=False)
         (CACHE_DIR / f"{locality_slug(report['listing'].get('locality'))}.json").write_text(body, encoding="utf-8")
         (CACHE_DIR / "latest.json").write_text(body, encoding="utf-8")
     except OSError:

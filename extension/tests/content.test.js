@@ -23,4 +23,13 @@ assert.strictEqual(l.locality, "HSR Layout Sector 2");
 assert.strictEqual(l.rent, 45000);
 assert.strictEqual(l.source, "magicbricks");
 
+// Real MagicBricks titles: no comma before the city, rent after "₹".
+l = extractListing({ title: "Rent 2 BHK Flat for Rent in Sobha Daffodil HSR Layout Bangalore @ ₹40000/month", body: { innerText: "" } },
+  "https://www.magicbricks.com/propertyDetails/2-BHK-1198-Sq-ft-Multistorey-Apartment-FOR-Rent-HSR-Layout-in-Bangalore&id=4d423837313431363439");
+assert.strictEqual(l.locality, "Sobha Daffodil HSR Layout");
+assert.strictEqual(l.rent, 40000);
+l = extractListing({ title: "Rent 2 BHK Flat for Rent in Sector 2 HSR Layout Bangalore @ ₹45000/month", body: { innerText: "" } }, mb);
+assert.strictEqual(l.locality, "Sector 2 HSR Layout");
+assert.strictEqual(l.rent, 45000);
+
 console.log("content.js: all assertions passed");

@@ -20,15 +20,21 @@ from summary import GROQ_CHAT_URL, llm_enabled, numbers_grounded
 ASK_TIMEOUT_SECONDS = 10
 ASK_MAX_WORDS = 60
 NOT_IN_SCAN = "Not in this scan."
+LLM_BUSY = "Couldn't answer right now (the answer service is busy or unreachable). Try again in a minute."
+MAX_DETAIL_CHARS = 220  # keep each question well under Groq's free-tier tokens-per-minute limit
+MAX_FINDINGS_PER_CHECK = 5
 
 SYSTEM_PROMPT = (
     "You answer a renter's question about a Bengaluru neighbourhood using ONLY the scan JSON you are given. "
     f"Reply with JSON only: {{\"in_scan\": true|false, \"answer\": \"<= {ASK_MAX_WORDS} words\", "
     "\"sources\": [source numbers you used], \"owner_question\": \"one question the renter could ask the owner\"}. "
     "If the scan does not answer the question, set in_scan=false and answer=\"\". Do not add facts, numbers, "
-    "dates or places that are not in the scan. Say 'official notice', 'news report' or 'dataset' only when the "
-    "scan says so. Checks with status could_not_verify were not verified; no_reports means the source was read "
-    "and had nothing for this area."
+    "dates or places that are not in the scan. Base the answer on the relevant check's headline and keep its "
+    "counts and time windows (last 30 days / past 12 months) exactly. Name the kind of source for every fact "
+    "('news report', 'official notice', 'dataset', 'listing') exactly as the scan labels it; never turn news "
+    "reports into official notices. Never claim official notices show nothing when the scan says notices "
+    "couldn't be fully read. Checks with status could_not_verify were not verified; no_reports means the "
+    "source was read and had nothing for this area."
 )
 
 TOPIC_OWNER_QUESTIONS = [
@@ -63,12 +69,14 @@ def scan_context(report: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str,
 
     checks = []
     for c in report.get("checks", []):
-        item = {"id": c["id"], "status": c["status"], "headline": c["headline"], "details": c.get("details", [])[:6]}
+        # Findings are passed separately below, so details only need the non-finding lines.
+        details = [d[:MAX_DETAIL_CHARS] for d in c.get("details", []) if not d.startswith(("News report", "Official"))]
+        item = {"id": c["id"], "status": c["status"], "headline": c["headline"], "details": details[:4]}
         n = source_no(c.get("source_url"), c["id"].replace("_", " "))
         if n:
             item["source"] = n
         findings = []
-        for f in c.get("findings", []) or []:
+        for f in (c.get("findings", []) or [])[:MAX_FINDINGS_PER_CHECK]:
             fn = source_no(f.get("source_url"), f.get("label") or c["id"])
             findings.append({"label": f.get("label"), "date": f.get("date"), "title": f.get("title"), "source": fn})
         if findings:
@@ -119,7 +127,9 @@ async def answer(report: dict[str, Any], question: str) -> dict[str, Any]:
         m = re.search(r"\{.*\}", content, re.S)
         reply = json.loads(m.group(0)) if m else {}
     except Exception:
-        return not_in_scan(question)
+        # An error is not an answer: never present it as "Not in this scan".
+        return {"in_scan": False, "answer": LLM_BUSY, "sources": [], "owner_question": owner_question_for(question),
+                "method": "error"}
 
     owner_q = str(reply.get("owner_question") or "").strip() or owner_question_for(question)
     text = " ".join(str(reply.get("answer") or "").split())

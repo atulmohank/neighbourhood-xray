@@ -43,9 +43,13 @@
   function fromTitle(title) {
     const out = {};
     // "... Rental Flat in Independent House, Rajiv Gandhi Nagar, 7th Sector, HSR Layout, Bangalore for Rs. 30,000 | NoBroker"
-    const loc = title.match(/\bin\s+([^|]+?),\s*(?:bangalore|bengaluru)\b/i);
+    // MagicBricks: "Rent 2 BHK Flat for Rent in Sobha Daffodil HSR Layout Bangalore @ ₹40000/month"
+    const loc =
+      title.match(/\bin\s+([^|]+?),\s*(?:bangalore|bengaluru)\b/i) ||
+      title.match(/\bfor rent in\s+(.+?)\s+(?:bangalore|bengaluru)\b/i);
     if (loc) out.locality = clean(loc[1]).replace(BUILDING_PREFIX, "");
-    const rent = title.match(/\b(?:rs\.?|₹)\s*([\d,]{4,})/i);
+    // No \b before ₹: there is no word boundary between a space and "₹".
+    const rent = title.match(/(?:\brs\.?|₹)\s*([\d,]{4,})/i);
     if (rent) out.rent = toNumber(rent[1]);
     const bhk = title.match(/(\d+)\s*BHK/i);
     if (bhk) out.bhk = +bhk[1];

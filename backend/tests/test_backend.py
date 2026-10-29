@@ -329,3 +329,12 @@ def test_empty_agent_page_read_is_a_failure_not_no_reports(monkeypatch):
     monkeypatch.setattr(tf, "run_agent", fake_agent)
     with pytest.raises(tf.TinyFishError):
         asyncio.run(nt.read_page_agent(nt.SOURCES["bwssb"], __import__("datetime").date(2025, 10, 30)))
+
+
+def test_cache_drops_listing_text(tmp_path, monkeypatch):
+    monkeypatch.setattr(main, "CACHE_DIR", tmp_path)
+    report = json.loads((ROOT / "shared" / "report.example.json").read_text(encoding="utf-8"))
+    report["listing"]["listing_text"] = "Owner: Some Person, phone hidden"
+    main.save_to_cache(report)
+    saved = json.loads((tmp_path / "latest.json").read_text(encoding="utf-8"))
+    assert "listing_text" not in saved["listing"] and saved["listing"]["locality"]
