@@ -33,14 +33,33 @@
     const bhk = bhkMatch ? parseInt(bhkMatch[1], 10) : null;
 
     // e.g. "2 BHK Flat For Rent In HSR Layout, Bangalore"
-    const locMatch = heading.match(
-        /\bin\s+(.+?)(?=\s*(?:\||[-–]\s*NoBroker|Without Brokerage|$))/i
+    // Extract locality from the NoBroker listing URL first.
+    const urlPath = new URL(location.href).pathname;
+
+    const urlLocMatch = urlPath.match(
+        /-in-(.+?)-(?:bangalore|bengaluru)-for-rs-/i
     );
 
-    let locality = locMatch ? clean(locMatch[1]) : null;
+    let locality = null;
 
-    if (locality) {
-        locality = locality.replace(/,\s*(?:Bangalore|Bengaluru).*$/i, "").trim();
+    if (urlLocMatch) {
+        locality = urlLocMatch[1]
+            .replace(/-/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .replace(/\bhsr\b/gi, "HSR")
+            .replace(/\b([a-z])/g, (match) => match.toUpperCase());
+    }
+
+// Fallback to the page heading if URL extraction fails.
+    if (!locality) {
+        const locMatch = heading.match(
+            /\bin\s+(.+?)(?=\s*(?:\||[-–]\s*NoBroker|Without Brokerage|$))/i
+    );
+
+    locality = locMatch
+        ? clean(locMatch[1]).replace(/,\s*(?:Bangalore|Bengaluru).*$/i, "").trim()
+        : null;
     }
 
     // e.g. "Rent ₹32,000" or "₹ 32,000 /month"
