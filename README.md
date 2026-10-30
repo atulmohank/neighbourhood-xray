@@ -142,8 +142,10 @@ Set `XRAY_MODE=live` in `backend/.env` (with `TINYFISH_API_KEY`, `LLM_PROVIDER=g
   (the headline says so).
 - Agent runs take ~250 s; a cold document cache makes the first live scan slow.
 - TinyFish returns no credit usage in the API; check the dashboard.
-- Residents are not live yet (could_not_verify). Rent comparables aren't adjusted for
-  size or furnishing; Housing.com blocks Fetch (HTTP 406).
+- Rent comparables aren't adjusted for size or furnishing; Housing.com blocks Fetch (HTTP 406).
+- Residents (not scored): Reddit and X posts from the past 12 months via TinyFish Search +
+  Fetch, verbatim quotes only (no usernames), themes counted per thread, automatic
+  sentiment. Quora blocks fetching (`bot_blocked`), so it is shown as could_not_verify.
 - The listing reader takes locality/rent/BHK from the NoBroker URL and title (and the
   MagicBricks URL); other portals need manual entry.
 - Saved demo scans for the three demo listings are committed in `backend/cache/`

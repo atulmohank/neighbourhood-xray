@@ -96,7 +96,7 @@ function render(report) {
 
   const rc = report.rent_compare || {};
   $("rent-badge").textContent = rc.premium_percent != null ? `${rc.premium_percent > 0 ? "+" : ""}${Math.round(rc.premium_percent)}%` : "";
-  const mentions = report.residents?.total_mentions;
+  const mentions = report.residents?.status === "verified" ? report.residents.total_mentions : 0;
   $("residents-badge").textContent = mentions ? String(mentions) : "";
 
   renderOverview(report);
@@ -304,24 +304,47 @@ function renderResidents(r) {
   const v = $("view-residents");
   v.replaceChildren();
   const res = r.residents || {};
-  if (res.status === "could_not_verify" || !(res.themes || []).length) {
-    v.append(h("section", { class: "card" }, h("div", { class: "label-row" }, h("span", { class: "label" }, "Residents"), statusChip("could_not_verify")),
-      h("p", { class: "muted" }, "No resident discussions were fetched for this scan.")));
+  // Which sites were read and which blocked us (never worked around).
+  const sitesLine = (res.sources || []).length
+    ? h("div", { class: "res-sources" }, res.sources.map((s) =>
+        h("span", { class: `chip ${s.status === "ok" ? "status-verified" : "status-could_not_verify"}`, title: s.note || "" },
+          s.status === "ok" ? `${s.site} ✓ ${s.threads} thread${s.threads === 1 ? "" : "s"}` : `${s.site}: could not verify`)))
+    : null;
+  const head = (chip) => h("div", { class: "label-row" }, h("span", { class: "label" }, `Residents · ${res.place || ""}`), chip);
+
+  if (res.status !== "verified" || !(res.themes || []).length) {
+    const noReports = res.status === "no_reports";
+    v.append(h("section", { class: "card" },
+      head(statusChip(noReports ? "no_reports" : "could_not_verify")),
+      h("p", { class: "muted" }, noReports ? "No resident reports found for this area in the past 12 months."
+        : res.note || "Resident posts could not be checked for this scan."),
+      sitesLine));
     return;
   }
   const max = Math.max(...res.themes.map((t) => t.mentions));
   v.append(
     h("section", { class: "card" },
-      h("div", { class: "label-row" }, h("span", { class: "label" }, `Top complaints · ${res.window || ""}`), h("span", { class: "label" }, `${res.total_mentions} mentions`)),
+      head(h("span", { class: "label" }, `${res.total_mentions} threads · ${res.window || ""}`)),
+      sitesLine,
       res.themes.map((t) =>
-        h("div", { class: "theme" }, h("span", {}, t.label), h("div", { class: "track" }, h("div", { class: "fill lvl-risk soft", style: `width:${(t.mentions / max) * 100}%` })), h("span", { class: "mono" }, t.mentions))
-      )
+        h("div", { class: "theme" }, h("span", {}, t.label),
+          h("div", { class: "track" }, h("div", { class: `fill ${t.sentiment === "positive" ? "lvl-good" : "lvl-risk"} soft`, style: `width:${(t.mentions / max) * 100}%` })),
+          h("span", { class: "mono" }, t.mentions))
+      ),
+      h("p", { class: "muted small" }, "Mentions = threads that bring up the theme. Not used in the score.")
     ),
     h("section", { class: "card" },
-      h("div", { class: "label-row" }, h("span", { class: "label" }, "In their words")),
-      (res.quotes || []).map((q) =>
-        h("blockquote", { class: `quote theme-${q.theme}` }, h("p", { class: "serif" }, `“${q.text}”`), h("div", { class: "quote-foot" }, h("span", { class: "mono muted" }, `${q.source} · ${q.posted_at || ""}`), sourceLink(q.source_url)))
-      )
+      h("div", { class: "label-row" }, h("span", { class: "label" }, "In their words"), h("span", { class: "label" }, "sentiment: automatic")),
+      (res.quotes || []).length
+        ? res.quotes.map((q) =>
+            h("blockquote", { class: `quote theme-${q.theme} sent-${q.sentiment}` },
+              h("p", { class: "serif" }, `“${q.text}”`),
+              h("div", { class: "quote-foot" },
+                h("span", { class: "mono muted" }, `${q.source} · ${q.age || fmtDate(q.posted_at)}`),
+                h("span", { class: `chip sent-chip sent-${q.sentiment}` }, q.sentiment),
+                sourceLink(q.source_url))))
+        : h("p", { class: "muted" }, "No quotable sentences in the posts found."),
+      res.note ? h("p", { class: "muted small" }, res.note) : null
     )
   );
 }

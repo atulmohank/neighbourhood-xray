@@ -259,3 +259,13 @@ details.check.flash { background: #FBF3E3; transition: background .3s; border-ra
 .sk-line { height: 10px; border-radius: 6px; background: var(--line); animation: pulse 1s infinite alternate; }
 .sk-note { margin: 2px 4px; font-size: 12.5px; }
 .mode-pill.mode-failed { color: var(--risk); border-color: var(--risk); }
+
+/* residents */
+.res-sources { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.quote.sent-positive { border-left-color: var(--good); }
+.quote.sent-neutral, .quote.sent-mixed { border-left-color: var(--watch); }
+.sent-chip { font-size: 10px; }
+.sent-chip.sent-negative { background: #F5E1DC; color: var(--risk); }
+.sent-chip.sent-positive { background: #E5EEE7; color: var(--good); }
+.sent-chip.sent-neutral, .sent-chip.sent-mixed { background: #F7ECD8; color: var(--watch); }
+.quote-foot { align-items: center; gap: 8px; }

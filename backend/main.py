@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 from checks import ALL_CHECKS  # noqa: E402  (after load_dotenv so env is set)
+from checks import residents  # noqa: E402  (not scored; fills the Residents tab)
 from checks.base import could_not_verify, now_iso  # noqa: E402
 from scoring import AREA_LABELS, checked_count, level_for, score_report, unverified_labels  # noqa: E402
 from summary import build_owner_questions, build_summary, generate_summary  # noqa: E402
@@ -229,13 +230,33 @@ async def replay_scan(scan: Scan, cached: dict[str, Any]) -> None:
 
 
 async def run_scan(scan: Scan) -> None:
-    total = len(ALL_CHECKS)
-    await scan.emit("started", {"scan_id": scan.id, "total": total, "checks": [c.CHECK_ID for c in ALL_CHECKS]})
+    live = is_live_mode()
+    total = len(ALL_CHECKS) + (1 if live else 0)
+    ids = [c.CHECK_ID for c in ALL_CHECKS] + (["residents"] if live else [])
+    await scan.emit("started", {"scan_id": scan.id, "total": total, "checks": ids})
+    resident_box: dict[str, Any] = {}
+    finished = [0]  # one counter for checks + residents, so progress always reaches total
     results: dict[str, dict[str, Any]] = {}
+
+    async def run_residents() -> None:
+        try:
+            res = await asyncio.wait_for(residents.run(scan.listing), CHECK_TIMEOUT_SECONDS)
+        except Exception as exc:  # never fabricated: a failure is could_not_verify
+            res = {"status": "could_not_verify", "window": "12 months", "total_mentions": 0, "themes": [],
+                   "quotes": [], "sources": [], "note": f"Residents search failed: {str(exc)[:120]}"}
+        resident_box["r"] = res
+        n_q = len(res.get("quotes", []))
+        headline = (f"{n_q} resident quote{'s' * (n_q != 1)} · {len(res.get('themes', []))} themes"
+                    if res["status"] == "verified" else
+                    "No resident reports found" if res["status"] == "no_reports" else "Could not verify residents")
+        finished[0] += 1
+        await scan.emit("progress", {"scan_id": scan.id, "check_id": "residents", "status": res["status"],
+                                     "headline": headline, "completed": finished[0], "total": total})
 
     async def run_and_report(check: Any) -> None:
         result = await run_one(check, scan.listing)
         results[check.CHECK_ID] = result
+        finished[0] += 1
         await scan.emit(
             "progress",
             {
@@ -243,14 +264,16 @@ async def run_scan(scan: Scan) -> None:
                 "check_id": result["id"],
                 "status": result["status"],
                 "headline": result["headline"],
-                "completed": len(results),
+                "completed": finished[0],
                 "total": total,
             },
         )
 
-    await asyncio.gather(*(run_and_report(c) for c in ALL_CHECKS))
+    await asyncio.gather(*(run_and_report(c) for c in ALL_CHECKS), *([run_residents()] if live else []))
     ordered = [results[c.CHECK_ID] for c in ALL_CHECKS]
     report = build_report(scan, ordered)
+    if "r" in resident_box:
+        report["residents"] = resident_box["r"]
     report["summary"], report["summary_method"] = await generate_summary(report)
     scan.report = report
     scan.status = "complete"

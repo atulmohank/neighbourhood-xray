@@ -414,3 +414,60 @@ def test_news_memory_keeps_earlier_reports(monkeypatch, tmp_path):
     assert [e["date"] for e in merged] == ["2026-10-07", "2026-09-22"]
     old = [{"kind": "news", "scope": "local", "title": "C", "date": "2025-01-01", "weight": 1.0, "source_url": "https://c"}]
     assert all(e["date"] != "2025-01-01" for e in nt.merge_news_memory(src, "Banashankari", old, since))
+
+
+def _fake_residents_sites(monkeypatch, pages, blocked=("quora.com",)):
+    import tinyfish_client as tf
+
+    async def fake_search(query, include_domains="", **kw):
+        return [{"url": u, "title": p["title"]} for u, p in pages.items() if any(d in u for d in include_domains.split(","))]
+
+    async def fake_fetch(urls, **kw):
+        res = [{"url": u, "title": pages[u]["title"], "published_date": pages[u]["date"], "text": pages[u]["text"]}
+               for u in urls if not any(b in u for b in blocked)]
+        errs = [{"url": u, "error": "bot_blocked"} for u in urls if any(b in u for b in blocked)]
+        return res, errs
+
+    monkeypatch.setattr(tf, "search", fake_search)
+    monkeypatch.setattr(tf, "fetch", fake_fetch)
+
+
+def test_residents_quotes_themes_and_blocked_sites(monkeypatch, tmp_path):
+    from checks import residents
+
+    monkeypatch.setattr(residents, "CACHE_DIR", tmp_path)
+    pages = {
+        "https://www.reddit.com/r/HSRLayout/comments/1/power": {
+            "title": "Power cut in HSR", "date": "2026-05-01",
+            "text": "r/HSRLayout u/someone\nAnyone else experiencing power outage for the nth time this week in HSR?\n"
+                    "Ask u/admin for details about the water tanker schedule please today."},
+        "https://x.com/chairmanbwssb/status/1": {
+            "title": "BWSSB", "date": "2026-06-22", "text": "HSR Layout water samples meet all quality standards today."},
+        "https://x.com/someone/status/2": {
+            "title": "x", "date": "2026-10-18", "text": "Some Name on X: \"HSR Layout water supply was cut for two days.\""},
+        "https://www.quora.com/q": {"title": "q", "date": "2026-05-01", "text": "HSR Layout water is fine"},
+        "https://www.reddit.com/r/bangalore/comments/2/old": {
+            "title": "old", "date": "2024-01-01", "text": "HSR Layout flooding was terrible this monsoon season again."},
+    }
+    _fake_residents_sites(monkeypatch, pages)
+    r = asyncio.run(residents.scan_residents({"locality": "Rajiv Gandhi Nagar, 7th Sector, HSR Layout"}))
+    assert r["status"] == "verified"
+    sites = {s["site"]: s["status"] for s in r["sources"]}
+    assert sites == {"Reddit": "ok", "X": "ok", "Quora": "could_not_verify"}
+    texts = [q["text"] for q in r["quotes"]]
+    assert "Anyone else experiencing power outage for the nth time this week in HSR?" in texts
+    assert all("u/" not in t and " on X" not in t for t in texts)  # no usernames/names
+    assert not any("quality standards" in t for t in texts)  # official account excluded
+    assert not any("terrible this monsoon" in t for t in texts)  # outside the 12-month window
+    assert all(q["source_url"].startswith("https://") and q["posted_at"] for q in r["quotes"])
+    assert {t["id"] for t in r["themes"]} >= {"power"}
+
+
+def test_residents_no_reports_when_nothing_relevant(monkeypatch, tmp_path):
+    from checks import residents
+
+    monkeypatch.setattr(residents, "CACHE_DIR", tmp_path)
+    _fake_residents_sites(monkeypatch, {"https://www.reddit.com/r/x/comments/3/y": {
+        "title": "Cats", "date": "2026-05-01", "text": "My cat likes Koramangala cafes a lot honestly."}})
+    r = asyncio.run(residents.scan_residents({"locality": "HSR Layout"}))
+    assert r["status"] == "no_reports" and r["quotes"] == [] and r["themes"] == []

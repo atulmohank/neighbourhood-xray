@@ -2,9 +2,9 @@
   "schema_version": "0.1.0",
   "data_mode": "live",
   "disclaimer": "",
-  "scan_id": "3729c1d98849",
-  "generated_at": "2026-10-30T04:33:41Z",
-  "duration_seconds": 39.5,
+  "scan_id": "3811553e0359",
+  "generated_at": "2026-10-30T05:01:26Z",
+  "duration_seconds": 56.0,
   "listing": {
     "locality": "Banashankari 3rd Stage, Banashankari",
     "rent": 26000,
@@ -16,7 +16,7 @@
   "verdict": "Looks good",
   "checked_count": 5,
   "unverified_checks": [],
-  "summary": "The recent checks show no water cuts in the past 30 days and only one power cut in that period. No flood‑vulnerable spot is listed for the ward, and the rent of ₹26,000 is about 13 % below the ₹30,000 median for a 2 BHK. The listing notes both corporation and borewell water supply.",
+  "summary": "The recent checks show no water cuts in the past 30 days and only one power cut in that period, both noted in city‑wide lists. No flood‑vulnerable spots are listed for the ward, and the rent of ₹26,000 is 13 % below the ₹30,000 median for a 2 BHK in Banashankari. The listing states the unit receives both corporation water and borewell supply.",
   "sources_count": 21,
   "sources": [
     {
@@ -107,11 +107,11 @@
         "News report — Goodreturns (city-wide list), 4 Feb 2026: Bengaluru Water Cut Alert! No Cauvery Water Supply on Feb 5-6 | Full List of Timings, Affected Areas (https://www.goodreturns.in/news/bengaluru-water-cut-alert-no-cauvery-water-supply-on-feb-5-6-full-list-of-timing-affected-areas-1486957.html)",
         "Official BWSSB page read (page HTML): 2 notices in the past 12 months, 0 naming Banashankari; page last updated 31 Jul 2026.",
         "2 official notices in the window could not be read (scanned image or legacy-font Kannada), so their area lists are incomplete: Water Shutdown on 31-07-2026. · 27.07.2026 (31 Jul 2026); Water Shutdown on 22-07-2026. · 20.07.2026 (22 Jul 2026)",
-        "News: 3 reports naming Banashankari in 12 months (5 articles checked).",
+        "News: 3 reports naming Banashankari in 12 months (4 articles checked).",
         "Weighting: last 30 days full, 1-12 months half; city-wide lists count 0.5x (weighted 0 recent + 1.5 older)."
       ],
       "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html",
-      "fetched_at": "2026-10-30T04:33:15Z",
+      "fetched_at": "2026-10-30T05:01:01Z",
       "findings": [
         {
           "kind": "news",
@@ -221,7 +221,7 @@
         "Weighting: last 30 days full, 1-12 months half; city-wide lists count 0.5x (weighted 0.5 recent + 3 older)."
       ],
       "source_url": "https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/",
-      "fetched_at": "2026-10-30T04:33:41Z",
+      "fetched_at": "2026-10-30T05:01:26Z",
       "findings": [
         {
           "kind": "news",
@@ -410,7 +410,7 @@
         "Source: BBMP/KSRSAC flood-vulnerable locations (OpenCity), dataset updated 27 Nov 2025; lists vulnerable spots, not dated incidents."
       ],
       "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban",
-      "fetched_at": "2026-10-30T04:33:02Z"
+      "fetched_at": "2026-10-30T05:00:30Z"
     },
     {
       "id": "rent_compare",
@@ -425,7 +425,7 @@
         "Dropped 3 outlier listings outside 50%-200% of the median (₹9,000, ₹10,000, ₹13,000)."
       ],
       "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-banashankari_bangalore",
-      "fetched_at": "2026-10-30T04:33:07Z",
+      "fetched_at": "2026-10-30T05:00:35Z",
       "evidence": [
         {
           "date": "2026-10-30",
@@ -456,7 +456,7 @@
         "Area-level context only: 'Banashankari' is listed under BWSSB Cauvery Stage 2 (OpenCity dataset updated 27 Nov 2025). This does not show that this building is connected or that supply is adequate."
       ],
       "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-3rd-stage-banashankari-bangalore-for-rs-26000/8aa9b093a0e86fc401a0eb23fcaa24b3/detail",
-      "fetched_at": "2026-10-30T04:33:02Z",
+      "fetched_at": "2026-10-30T05:00:30Z",
       "evidence": [
         {
           "date": null,
@@ -544,14 +544,103 @@
       "monthly_saving": 11000,
       "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-bangalore-for-rs-15000/8a9fad95817a208701817a720d8a35a5/detail"
     },
-    "fetched_at": "2026-10-30T04:33:07Z"
+    "fetched_at": "2026-10-30T05:00:35Z"
   },
   "residents": {
-    "status": "could_not_verify",
-    "window": null,
-    "total_mentions": 0,
-    "themes": [],
-    "quotes": []
+    "status": "verified",
+    "place": "Banashankari",
+    "window": "12 months",
+    "total_mentions": 3,
+    "themes": [
+      {
+        "id": "water",
+        "label": "Water / tankers",
+        "mentions": 2,
+        "sentiment": "mixed"
+      },
+      {
+        "id": "power",
+        "label": "Power cuts",
+        "mentions": 1,
+        "sentiment": "negative"
+      },
+      {
+        "id": "flooding",
+        "label": "Flooding / waterlogging",
+        "mentions": 1,
+        "sentiment": "negative"
+      },
+      {
+        "id": "rent",
+        "label": "Rent / landlords",
+        "mentions": 1,
+        "sentiment": "negative"
+      },
+      {
+        "id": "traffic",
+        "label": "Traffic",
+        "mentions": 1,
+        "sentiment": "negative"
+      }
+    ],
+    "quotes": [
+      {
+        "text": "More offices, more apartments, more people moving in , but the roads, metro, drainage, water supply, everything else feels permanently behind schedule.",
+        "theme": "water",
+        "source": "Reddit · r/bangalore",
+        "source_url": "https://www.reddit.com/r/bangalore/comments/1tqucn5/how_much_more_population_can_bangalore/",
+        "posted_at": "2026-05-29",
+        "age": "5 months ago",
+        "sentiment": "neutral"
+      },
+      {
+        "text": "Is water going to become the biggest limitation?",
+        "theme": "water",
+        "source": "Reddit · r/bangalore",
+        "source_url": "https://www.reddit.com/r/bangalore/comments/1tqucn5/how_much_more_population_can_bangalore/",
+        "posted_at": "2026-05-29",
+        "age": "5 months ago",
+        "sentiment": "neutral"
+      },
+      {
+        "text": "In RR Nagar & Banashankari sub-station areas, outage from 10am-4pm covering Uttarahalli, BSK 3rd-6th Stage, Girinagar, Kathriguppe, PES College, Hosakerehalli, Basavanagudi & nearby areas.",
+        "theme": "power",
+        "source": "X post",
+        "source_url": "https://x.com/ChristinMP_/status/2068066446702494106",
+        "posted_at": "2026-06-19",
+        "age": "4 months ago",
+        "sentiment": "negative"
+      },
+      {
+        "text": "Disruption in Kaveri water supply on 26th February across some parts of Bengaluru City.",
+        "theme": "water",
+        "source": "X post",
+        "source_url": "https://x.com/ravikeerthi22/status/2026311522427777028",
+        "posted_at": "2026-02-24",
+        "age": "8 months ago",
+        "sentiment": "neutral"
+      }
+    ],
+    "sources": [
+      {
+        "site": "Reddit",
+        "status": "ok",
+        "threads": 1
+      },
+      {
+        "site": "X",
+        "status": "ok",
+        "threads": 2
+      },
+      {
+        "site": "Quora",
+        "status": "could_not_verify",
+        "note": "bot blocked (not worked around)",
+        "threads": 0
+      }
+    ],
+    "fetched_at": "2026-10-30T05:00:52Z",
+    "note": "Quotes are verbatim sentences from public posts; usernames are not shown. Sentiment is automatic."
   },
   "questions_for_owner": [],
   "summary_method": "llm"
