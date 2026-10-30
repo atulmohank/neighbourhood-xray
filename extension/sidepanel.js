@@ -127,6 +127,7 @@ function renderOverview(r) {
 
   v.append(
     h("section", { class: "card hero" },
+      r.data_mode === "example" ? h("div", { class: "example-tag" }, "Example data — illustrative, not a real scan") : null,
       h("div", { class: "hero-row" },
         scoreRing(r.score),
         h("div", {},
@@ -419,6 +420,37 @@ function setProgress(done, total, label) {
   if (label) $("progress-label").textContent = label;
 }
 
+// While a scan runs, show only progress + a skeleton: never leave the example (or a previous
+// report) on screen where it could be mistaken for this scan's result.
+function clearReport(demo, body = {}) {
+  $("listing-sub").textContent = [body.locality, body.bhk ? `${body.bhk} BHK` : null].filter(Boolean).join(" · ") || "Scanning…";
+  const pill = $("mode-pill");
+  pill.textContent = demo ? "LOADING" : "SCANNING";
+  pill.className = "mode-pill mode-scanning";
+  $("data-banner").classList.add("hidden");
+  $("rent-badge").textContent = "";
+  $("residents-badge").textContent = "";
+  const skeleton = (lines) =>
+    h("section", { class: "card skeleton" }, Array.from({ length: lines }, (_, i) => h("div", { class: "sk-line", style: `width:${90 - i * 15}%` })));
+  $("view-overview").replaceChildren(
+    h("section", { class: "card skeleton hero-skel" },
+      h("div", { class: "sk-ring" }),
+      h("div", { class: "sk-text" }, h("div", { class: "sk-line", style: "width:60%" }), h("div", { class: "sk-line", style: "width:85%" }), h("div", { class: "sk-line", style: "width:70%" }))),
+    h("p", { class: "muted sk-note" }, demo ? "Loading the saved scan…" : "Results appear here when the checks finish."),
+    skeleton(5), skeleton(3));
+  for (const id of ["view-rent", "view-residents", "view-ask"]) {
+    $(id).replaceChildren(h("p", { class: "muted sk-note" }, "Waiting for this scan's results…"), skeleton(3));
+  }
+}
+
+function showFailed(msg) {
+  const pill = $("mode-pill");
+  pill.textContent = "FAILED";
+  pill.className = "mode-pill mode-failed";
+  const note = h("section", { class: "card" }, h("p", { class: "muted" }, `No result: ${msg} Use “Show example” or “Replay cached scan”.`));
+  for (const id of ["view-overview", "view-rent", "view-residents", "view-ask"]) $(id).replaceChildren(note.cloneNode(true));
+}
+
 function setBusy(busy) {
   $("btn-scan").disabled = busy;
   $("btn-replay").disabled = busy;
@@ -445,6 +477,7 @@ async function startScan(demo = false) {
   const body = { locality, rent: num("in-rent"), bhk: num("in-bhk"), listing_url: window.__listing?.url || null, listing_text: window.__listing?.text || null, source: window.__listing?.source || "manual" };
 
   if (source) source.close();
+  clearReport(demo, body);
   setBusy(true);
   $("progress-list").replaceChildren();
   setProgress(0, 0, demo ? "Loading cached scan…" : "Starting scan…");
@@ -458,11 +491,14 @@ async function startScan(demo = false) {
   } catch (err) {
     setBusy(false);
     $("progress").classList.add("hidden");
-    showError(err.message.startsWith("no cached") ? `Replay failed: ${err.message}.` : `Could not reach the backend at ${BACKEND} (${err.message}). Is it running?`);
+    const msg = err.message.startsWith("no cached") ? `Replay failed: ${err.message}.` : `Could not reach the backend at ${BACKEND} (${err.message}). Is it running?`;
+    showError(msg);
+    showFailed(msg);
     return;
   }
 
   let total = 0;
+  let gotReport = false;
   source = new EventSource(`${BACKEND}/scan/${scanId}/stream`);
   source.addEventListener("started", (e) => {
     const d = JSON.parse(e.data);
@@ -477,7 +513,7 @@ async function startScan(demo = false) {
     if (li) li.replaceChildren(h("span", { class: `dot st-${d.status}` }), h("span", {}, d.headline), statusChip(d.status));
     if (li) li.className = "";
   });
-  source.addEventListener("report", (e) => render(JSON.parse(e.data)));
+  source.addEventListener("report", (e) => { gotReport = true; render(JSON.parse(e.data)); });
   source.addEventListener("done", () => {
     source.close();
     source = null;
@@ -490,6 +526,7 @@ async function startScan(demo = false) {
     source = null;
     setBusy(false);
     showError("Lost connection to the scan stream.");
+    if (!gotReport) showFailed("Lost connection to the scan stream before the report arrived.");
   };
 }
 
