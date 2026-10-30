@@ -231,3 +231,19 @@ main { padding: 12px 12px 24px; display: flex; flex-direction: column; gap: 10px
 .ask-row input { flex: 1; border: 0; background: transparent; font: 14px var(--sans); padding: 6px 8px; color: var(--ink); }
 .ask-row input:focus { outline: none; }
 .ask-send { flex: 0 0 auto; background: var(--accent); border-color: var(--accent); padding: 8px 16px; }
+
+/* evidence rows, clickable sources, partial data */
+.pill-link { cursor: pointer; background: var(--card); font: inherit; color: var(--ink); }
+.pill-link:hover { border-color: var(--accent); }
+.check ul.evidence { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
+.ev { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 8px; align-items: baseline; font-size: 12.5px;
+  padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.ev-date { font-size: 11px; color: var(--mute); white-space: nowrap; }
+.ev-title { grid-column: 2; }
+.ev-label { grid-column: 2; font-size: 11px; color: var(--ink-2); }
+.ev .src { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
+.check ul.check-notes { margin: 6px 0; padding-left: 18px; color: var(--ink-2); font-size: 12px; }
+.chip-partial { background: #FBF3E3; color: var(--watch); border: 1px dashed var(--watch); }
+.fill.partial { background: repeating-linear-gradient(45deg, #E7E1D6 0 6px, #F3E7CC 6px 12px); }
+.partial-note { font-size: 11.5px; color: var(--watch); margin-top: 4px; }
+details.check.flash { background: #FBF3E3; transition: background .3s; border-radius: 8px; }

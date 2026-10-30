@@ -72,6 +72,11 @@ def check_flooding(listing: dict[str, Any]) -> dict[str, Any]:
         "headline": f"{ward} ward has {len(ward_points)} officially flood-vulnerable spots (as of {ds.FLOOD_DATASET_DATE})",
         "details": details,
         "source_url": ds.FLOOD_DATASET_URL,
+        "evidence": [
+            {"date": ds.FLOOD_DATASET_ISO, "title": f"{p['location']} (ward {p['ward']})",
+             "label": "Official flood-vulnerable spot (BBMP/KSRSAC via OpenCity)", "source_url": ds.FLOOD_DATASET_URL}
+            for p in ward_points
+        ],
         "fetched_at": now_iso(),
     }
 

@@ -46,7 +46,8 @@ def cauvery_context(locality: str) -> str | None:
 
 def snippet(text: str, m: re.Match) -> str:
     start, end = max(0, m.start() - 60), min(len(text), m.end() + 60)
-    return "…" + " ".join(text[start:end].split()) + "…"
+    # Strip markdown heading marks from fetched pages ("##### Water Supply ##### Corporation").
+    return "…" + " ".join(re.sub(r"#+", " ", text[start:end]).split()) + "…"
 
 
 def states_source(text: str) -> bool:
@@ -72,6 +73,15 @@ async def listing_text_for(listing: dict[str, Any]) -> str:
     except tf.TinyFishError:
         fetched = ""
     return f"{fetched}\n{sent}".strip() if fetched else sent
+
+
+def listing_evidence(listing: dict[str, Any], what: str, context: str | None) -> list[dict[str, Any]]:
+    rows = [{"date": None, "title": what, "label": f"Listing ({(listing.get('source') or 'portal').title()})",
+             "source_url": listing.get("listing_url")}]
+    if context:
+        rows.append({"date": "2025-11-27", "title": "Area listed in BWSSB Cauvery supply stages (area context only)",
+                     "label": "Dataset (BWSSB via OpenCity)", "source_url": ds.CAUVERY_DATASET_URL})
+    return rows
 
 
 def check_water_source(listing: dict[str, Any], text: str | None = None) -> dict[str, Any]:
@@ -102,6 +112,7 @@ def check_water_source(listing: dict[str, Any], text: str | None = None) -> dict
             ),
             "details": details,
             "source_url": url,
+            "evidence": listing_evidence(listing, snippet(text, m), context),
             "fetched_at": now_iso(),
         }
 
@@ -110,9 +121,11 @@ def check_water_source(listing: dict[str, Any], text: str | None = None) -> dict
         details = ["The listing does not say where the water comes from."]
         if context:
             details.append(context)
-        return no_reports(
+        result = no_reports(
             CHECK_ID, "Listing doesn't say where the water comes from", details, url, tag="Not stated"
         )
+        result["evidence"] = listing_evidence(listing, "No water source stated", context)
+        return result
     result = could_not_verify(
         CHECK_ID,
         "Could not read the listing page." if url else "No listing URL or text was provided.",

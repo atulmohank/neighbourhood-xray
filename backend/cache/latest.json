@@ -2,9 +2,9 @@
   "schema_version": "0.1.0",
   "data_mode": "live",
   "disclaimer": "",
-  "scan_id": "748fcfdb0827",
-  "generated_at": "2026-10-29T19:36:35Z",
-  "duration_seconds": 15.2,
+  "scan_id": "3729c1d98849",
+  "generated_at": "2026-10-30T04:33:41Z",
+  "duration_seconds": 39.5,
   "listing": {
     "locality": "Banashankari 3rd Stage, Banashankari",
     "rent": 26000,
@@ -12,29 +12,64 @@
     "listing_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-3rd-stage-banashankari-bangalore-for-rs-26000/8aa9b093a0e86fc401a0eb23fcaa24b3/detail",
     "source": "nobroker"
   },
-  "score": 82,
+  "score": 90,
   "verdict": "Looks good",
   "checked_count": 5,
   "unverified_checks": [],
-  "summary": "The neighbourhood scores 82 and the verdict is “Looks good.” Recent data show no water cuts in the last 30 days, one power cut in the last 30 days, rent ₹26,000 is 13 % below the local 2 BHK median, and the listing claims both corporation and borewell supply. No flood‑vulnerable spot is listed, though the ward name may be outdated, and the water‑source claim cannot be confirmed for this building.",
-  "sources_count": 5,
-  "sources": [],
+  "summary": "The recent checks show no water cuts in the past 30 days and only one power cut in that period. No flood‑vulnerable spot is listed for the ward, and the rent of ₹26,000 is about 13 % below the ₹30,000 median for a 2 BHK. The listing notes both corporation and borewell water supply.",
+  "sources_count": 21,
+  "sources": [
+    {
+      "id": "water_cuts",
+      "check_id": "water_cuts",
+      "label": "Water supply",
+      "count": 6
+    },
+    {
+      "id": "power_cuts",
+      "check_id": "power_cuts",
+      "label": "Power",
+      "count": 9
+    },
+    {
+      "id": "flooding",
+      "check_id": "flooding",
+      "label": "Flood risk",
+      "count": 1
+    },
+    {
+      "id": "rent_compare",
+      "check_id": "rent_compare",
+      "label": "Rent value",
+      "count": 3
+    },
+    {
+      "id": "water_source",
+      "check_id": "water_source",
+      "label": "Water source",
+      "count": 2
+    }
+  ],
   "area_scores": [
     {
       "id": "water_cuts",
       "label": "Water supply",
-      "score": 70,
+      "score": 85,
       "level": "good",
       "tag": "0 in 30d · 3 in 12m",
-      "status": "verified"
+      "status": "verified",
+      "confidence": "partial",
+      "partial_note": "2 official notices couldn't be fully read, so this may miss cuts"
     },
     {
       "id": "power_cuts",
       "label": "Power",
-      "score": 48,
-      "level": "watch",
-      "tag": "1 in 30d · 6 in 12m",
-      "status": "verified"
+      "score": 70,
+      "level": "good",
+      "tag": "1 in 30d · 7 in 12m",
+      "status": "verified",
+      "confidence": "partial",
+      "partial_note": "2 official notices couldn't be fully read, so this may miss cuts"
     },
     {
       "id": "flooding",
@@ -65,120 +100,306 @@
     {
       "id": "water_cuts",
       "status": "verified",
-      "headline": "No water cuts in last 30 days · 3 news reports in past 12 months (latest 22 Sep 2026)",
+      "headline": "No water cuts in last 30 days · 3 city-wide lists in past 12 months (latest 22 Sep 2026)",
       "details": [
-        "News report — Oneindia, 22 Sep 2026: Bengaluru Water Supply Cut: These Areas May Face Cauvery Water Disruption Today (https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html)",
-        "News report — The Times of India, 21 Sep 2026: South Bengaluru to face Cauvery water supply disruption today (https://timesofindia.indiatimes.com/city/bengaluru/south-bengaluru-to-face-cauvery-water-supply-disruption-today/articleshow/134395826.cms)",
-        "News report — Goodreturns, 4 Feb 2026: Bengaluru Water Shutdown: BWSSB to Halt Cauvery Supply for 24 Hours for Essential Maintenance (https://www.goodreturns.in/news/bengaluru-water-shutdown-bwssb-halts-cauvery-supply-for-24-hours-011-1486929.html)",
+        "News report — Oneindia (city-wide list), 22 Sep 2026: Bengaluru Water Supply Cut: These Areas May Face Cauvery Water Disruption Today (https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html)",
+        "News report — The Times of India (city-wide list), 21 Sep 2026: South Bengaluru to face Cauvery water supply disruption today (https://timesofindia.indiatimes.com/city/bengaluru/south-bengaluru-to-face-cauvery-water-supply-disruption-today/articleshow/134395826.cms)",
+        "News report — Goodreturns (city-wide list), 4 Feb 2026: Bengaluru Water Cut Alert! No Cauvery Water Supply on Feb 5-6 | Full List of Timings, Affected Areas (https://www.goodreturns.in/news/bengaluru-water-cut-alert-no-cauvery-water-supply-on-feb-5-6-full-list-of-timing-affected-areas-1486957.html)",
         "Official BWSSB page read (page HTML): 2 notices in the past 12 months, 0 naming Banashankari; page last updated 31 Jul 2026.",
         "2 official notices in the window could not be read (scanned image or legacy-font Kannada), so their area lists are incomplete: Water Shutdown on 31-07-2026. · 27.07.2026 (31 Jul 2026); Water Shutdown on 22-07-2026. · 20.07.2026 (22 Jul 2026)",
-        "News: 3 reports naming Banashankari in 12 months (5 articles checked)."
+        "News: 3 reports naming Banashankari in 12 months (5 articles checked).",
+        "Weighting: last 30 days full, 1-12 months half; city-wide lists count 0.5x (weighted 0 recent + 1.5 older)."
       ],
       "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html",
-      "fetched_at": "2026-10-29T19:36:32Z",
+      "fetched_at": "2026-10-30T04:33:15Z",
       "findings": [
         {
           "kind": "news",
+          "scope": "citywide",
           "title": "Bengaluru Water Supply Cut: These Areas May Face Cauvery Water Disruption Today",
           "date": "2026-09-22",
+          "weight": 0.5,
           "publisher": "Oneindia",
           "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html",
-          "label": "News report — Oneindia",
+          "label": "News report — Oneindia (city-wide list)",
           "window": "12m"
         },
         {
           "kind": "news",
+          "scope": "citywide",
           "title": "South Bengaluru to face Cauvery water supply disruption today",
           "date": "2026-09-21",
+          "weight": 0.5,
           "publisher": "The Times of India",
           "source_url": "https://timesofindia.indiatimes.com/city/bengaluru/south-bengaluru-to-face-cauvery-water-supply-disruption-today/articleshow/134395826.cms",
-          "label": "News report — The Times of India",
+          "label": "News report — The Times of India (city-wide list)",
           "window": "12m"
         },
         {
           "kind": "news",
-          "title": "Bengaluru Water Shutdown: BWSSB to Halt Cauvery Supply for 24 Hours for Essential Maintenance",
+          "scope": "citywide",
+          "title": "Bengaluru Water Cut Alert! No Cauvery Water Supply on Feb 5-6 | Full List of Timings, Affected Areas",
           "date": "2026-02-04",
+          "weight": 0.5,
           "publisher": "Goodreturns",
-          "source_url": "https://www.goodreturns.in/news/bengaluru-water-shutdown-bwssb-halts-cauvery-supply-for-24-hours-011-1486929.html",
-          "label": "News report — Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-water-cut-alert-no-cauvery-water-supply-on-feb-5-6-full-list-of-timing-affected-areas-1486957.html",
+          "label": "News report — Goodreturns (city-wide list)",
           "window": "12m"
         }
-      ]
+      ],
+      "evidence": [
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Water Supply Cut: These Areas May Face Cauvery Water Disruption Today",
+          "date": "2026-09-22",
+          "weight": 0.5,
+          "publisher": "Oneindia",
+          "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html",
+          "label": "News report — Oneindia (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "South Bengaluru to face Cauvery water supply disruption today",
+          "date": "2026-09-21",
+          "weight": 0.5,
+          "publisher": "The Times of India",
+          "source_url": "https://timesofindia.indiatimes.com/city/bengaluru/south-bengaluru-to-face-cauvery-water-supply-disruption-today/articleshow/134395826.cms",
+          "label": "News report — The Times of India (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Water Cut Alert! No Cauvery Water Supply on Feb 5-6 | Full List of Timings, Affected Areas",
+          "date": "2026-02-04",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-water-cut-alert-no-cauvery-water-supply-on-feb-5-6-full-list-of-timing-affected-areas-1486957.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "date": "2026-07-31",
+          "title": "Notice list (2 in past 12 months)",
+          "label": "Official BWSSB page",
+          "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en"
+        },
+        {
+          "date": "2026-07-31",
+          "title": "Water Shutdown on 31-07-2026. · 27.07.2026",
+          "label": "Official BWSSB notice — couldn't be fully read",
+          "source_url": "https://bwssb.karnataka.gov.in/uploads/shutdown31_1785306237.pdf"
+        },
+        {
+          "date": "2026-07-22",
+          "title": "Water Shutdown on 22-07-2026. · 20.07.2026",
+          "label": "Official BWSSB notice — couldn't be fully read",
+          "source_url": "https://bwssb.karnataka.gov.in/uploads/Shut%20Down%20Areas%20Stage%204%20Phase-I_1784618234.pdf"
+        }
+      ],
+      "confidence": "partial",
+      "partial_note": "2 official notices couldn't be fully read, so this may miss cuts"
     },
     {
       "id": "power_cuts",
       "status": "verified",
-      "headline": "1 power cut in last 30 days (1 news report) · 5 news reports in past 12 months (latest 29 Oct 2026)",
+      "headline": "1 power cut in last 30 days (1 city-wide list) · 6 city-wide lists in past 12 months (latest 29 Oct 2026)",
       "details": [
-        "News report — Urban Acres, 29 Oct 2026: Bengaluru Power Cut: 50+ Areas Affected on October 31 (https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/)",
-        "News report — Times Now, 22 Jul 2026: Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas (https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029)",
-        "News report — Goodreturns, 24 Jun 2026: Bengaluru Power Cut Today: BESCOM Announce Power Outages Of 7-Hours On June 24; Check Affected Areas (https://www.goodreturns.in/news/bengaluru-power-cut-today-bescom-announce-power-outages-of-7-hours-on-june-24-check-affected-areas-1517769.html)",
-        "News report — The Hindu, 20 Jun 2026: Power cut to hit several areas in Bengaluru on June 20 (https://www.thehindu.com/news/cities/bangalore/power-cuts-to-hit-several-areas-in-bengaluru-on-june-20-bescom-issues-alert/article71123332.ece)",
-        "News report — News18, 24 Mar 2026: Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week (https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html)",
-        "News report — NewsFirst Prime, 20 Dec 2025: Bengaluru to face power outage today as KPTCL takes up emergency maintenance (https://newsfirstprime.com/bengaluru/bengaluru-to-face-power-outage-today-as-kptcl-takes-up-emergency-maintenance-10925649)",
+        "News report — Urban Acres (city-wide list), 29 Oct 2026: Bengaluru Power Cut: 50+ Areas Affected on October 31 (https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/)",
+        "News report — Times Now (city-wide list), 22 Jul 2026: Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas (https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029)",
+        "News report — Goodreturns (city-wide list), 24 Jun 2026: Bengaluru Power Cut Today: BESCOM Announce Power Outages Of 7-Hours On June 24; Check Affected Areas (https://www.goodreturns.in/news/bengaluru-power-cut-today-bescom-announce-power-outages-of-7-hours-on-june-24-check-affected-areas-1517769.html)",
+        "News report — The Hindu (city-wide list), 20 Jun 2026: Power cut to hit several areas in Bengaluru on June 20 (https://www.thehindu.com/news/cities/bangalore/power-cuts-to-hit-several-areas-in-bengaluru-on-june-20-bescom-issues-alert/article71123332.ece)",
+        "News report — News18 (city-wide list), 24 Mar 2026: Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week (https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html)",
+        "News report — NewsFirst Prime (city-wide list), 20 Dec 2025: Bengaluru to face power outage today as KPTCL takes up emergency maintenance (https://newsfirstprime.com/bengaluru/bengaluru-to-face-power-outage-today-as-kptcl-takes-up-emergency-maintenance-10925649)",
+        "News report — Moneycontrol.com (city-wide list), 26 Nov 2025: Bengaluru power cut alert: BESCOM's Nov 26 shutdown to impact south city; full area list here- Moneycontrol.com (https://www.moneycontrol.com/city/bengaluru-power-cut-alert-bescom-s-nov-26-shutdown-to-impact-south-city-full-area-list-here-article-13696686.html)",
         "Official BESCOM page read (page HTML): 5 notices in the past 12 months, 0 naming Banashankari; page last updated 1 Jul 2026.",
         "2 official notices in the window could not be read (scanned image or legacy-font Kannada), so their area lists are incomplete: FY 2025-26 · Contingency Power Outages details of BESCOM (31 Mar 2026); JULY 2026 · Contingency Power Outages details of BESCOM (1 Jul 2026)",
-        "News: 6 reports naming Banashankari in 12 months (13 articles checked)."
+        "News: 7 reports naming Banashankari in 12 months (8 articles checked).",
+        "Weighting: last 30 days full, 1-12 months half; city-wide lists count 0.5x (weighted 0.5 recent + 3 older)."
       ],
       "source_url": "https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/",
-      "fetched_at": "2026-10-29T19:36:35Z",
+      "fetched_at": "2026-10-30T04:33:41Z",
       "findings": [
         {
           "kind": "news",
+          "scope": "citywide",
           "title": "Bengaluru Power Cut: 50+ Areas Affected on October 31",
           "date": "2026-10-29",
+          "weight": 0.5,
           "publisher": "Urban Acres",
           "source_url": "https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/",
-          "label": "News report — Urban Acres",
+          "label": "News report — Urban Acres (city-wide list)",
           "window": "30d"
         },
         {
           "kind": "news",
+          "scope": "citywide",
           "title": "Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas",
           "date": "2026-07-22",
+          "weight": 0.5,
           "publisher": "Times Now",
           "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029",
-          "label": "News report — Times Now",
+          "label": "News report — Times Now (city-wide list)",
           "window": "12m"
         },
         {
           "kind": "news",
+          "scope": "citywide",
           "title": "Bengaluru Power Cut Today: BESCOM Announce Power Outages Of 7-Hours On June 24; Check Affected Areas",
           "date": "2026-06-24",
+          "weight": 0.5,
           "publisher": "Goodreturns",
           "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-bescom-announce-power-outages-of-7-hours-on-june-24-check-affected-areas-1517769.html",
-          "label": "News report — Goodreturns",
+          "label": "News report — Goodreturns (city-wide list)",
           "window": "12m"
         },
         {
           "kind": "news",
+          "scope": "citywide",
           "title": "Power cut to hit several areas in Bengaluru on June 20",
           "date": "2026-06-20",
+          "weight": 0.5,
           "publisher": "The Hindu",
           "source_url": "https://www.thehindu.com/news/cities/bangalore/power-cuts-to-hit-several-areas-in-bengaluru-on-june-20-bescom-issues-alert/article71123332.ece",
-          "label": "News report — The Hindu",
+          "label": "News report — The Hindu (city-wide list)",
           "window": "12m"
         },
         {
           "kind": "news",
+          "scope": "citywide",
           "title": "Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week",
           "date": "2026-03-24",
+          "weight": 0.5,
           "publisher": "News18",
           "source_url": "https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html",
-          "label": "News report — News18",
+          "label": "News report — News18 (city-wide list)",
           "window": "12m"
         },
         {
           "kind": "news",
+          "scope": "citywide",
           "title": "Bengaluru to face power outage today as KPTCL takes up emergency maintenance",
           "date": "2025-12-20",
+          "weight": 0.5,
           "publisher": "NewsFirst Prime",
           "source_url": "https://newsfirstprime.com/bengaluru/bengaluru-to-face-power-outage-today-as-kptcl-takes-up-emergency-maintenance-10925649",
-          "label": "News report — NewsFirst Prime",
+          "label": "News report — NewsFirst Prime (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru power cut alert: BESCOM's Nov 26 shutdown to impact south city; full area list here- Moneycontrol.com",
+          "date": "2025-11-26",
+          "weight": 0.5,
+          "publisher": "Moneycontrol.com",
+          "source_url": "https://www.moneycontrol.com/city/bengaluru-power-cut-alert-bescom-s-nov-26-shutdown-to-impact-south-city-full-area-list-here-article-13696686.html",
+          "label": "News report — Moneycontrol.com (city-wide list)",
           "window": "12m"
         }
-      ]
+      ],
+      "evidence": [
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut: 50+ Areas Affected on October 31",
+          "date": "2026-10-29",
+          "weight": 0.5,
+          "publisher": "Urban Acres",
+          "source_url": "https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/",
+          "label": "News report — Urban Acres (city-wide list)",
+          "window": "30d"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas",
+          "date": "2026-07-22",
+          "weight": 0.5,
+          "publisher": "Times Now",
+          "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029",
+          "label": "News report — Times Now (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: BESCOM Announce Power Outages Of 7-Hours On June 24; Check Affected Areas",
+          "date": "2026-06-24",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-bescom-announce-power-outages-of-7-hours-on-june-24-check-affected-areas-1517769.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Power cut to hit several areas in Bengaluru on June 20",
+          "date": "2026-06-20",
+          "weight": 0.5,
+          "publisher": "The Hindu",
+          "source_url": "https://www.thehindu.com/news/cities/bangalore/power-cuts-to-hit-several-areas-in-bengaluru-on-june-20-bescom-issues-alert/article71123332.ece",
+          "label": "News report — The Hindu (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week",
+          "date": "2026-03-24",
+          "weight": 0.5,
+          "publisher": "News18",
+          "source_url": "https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html",
+          "label": "News report — News18 (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru to face power outage today as KPTCL takes up emergency maintenance",
+          "date": "2025-12-20",
+          "weight": 0.5,
+          "publisher": "NewsFirst Prime",
+          "source_url": "https://newsfirstprime.com/bengaluru/bengaluru-to-face-power-outage-today-as-kptcl-takes-up-emergency-maintenance-10925649",
+          "label": "News report — NewsFirst Prime (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru power cut alert: BESCOM's Nov 26 shutdown to impact south city; full area list here- Moneycontrol.com",
+          "date": "2025-11-26",
+          "weight": 0.5,
+          "publisher": "Moneycontrol.com",
+          "source_url": "https://www.moneycontrol.com/city/bengaluru-power-cut-alert-bescom-s-nov-26-shutdown-to-impact-south-city-full-area-list-here-article-13696686.html",
+          "label": "News report — Moneycontrol.com (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "date": "2026-07-01",
+          "title": "Notice list (5 in past 12 months)",
+          "label": "Official BESCOM page",
+          "source_url": "https://bescom.karnataka.gov.in/421/Contingency-Power-Outages/en"
+        },
+        {
+          "date": "2026-03-31",
+          "title": "FY 2025-26 · Contingency Power Outages details of BESCOM",
+          "label": "Official BESCOM notice — couldn't be fully read",
+          "source_url": "https://bescom.karnataka.gov.in/uploads/media_to_upload1785507451.pdf"
+        },
+        {
+          "date": "2026-07-01",
+          "title": "JULY 2026 · Contingency Power Outages details of BESCOM",
+          "label": "Official BESCOM notice — couldn't be fully read",
+          "source_url": "https://bescom.karnataka.gov.in/uploads/media_to_upload1785507451.pdf"
+        }
+      ],
+      "confidence": "partial",
+      "partial_note": "2 official notices couldn't be fully read, so this may miss cuts"
     },
     {
       "id": "flooding",
@@ -189,7 +410,7 @@
         "Source: BBMP/KSRSAC flood-vulnerable locations (OpenCity), dataset updated 27 Nov 2025; lists vulnerable spots, not dated incidents."
       ],
       "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban",
-      "fetched_at": "2026-10-29T19:36:20Z"
+      "fetched_at": "2026-10-30T04:33:02Z"
     },
     {
       "id": "rent_compare",
@@ -204,18 +425,52 @@
         "Dropped 3 outlier listings outside 50%-200% of the median (₹9,000, ₹10,000, ₹13,000)."
       ],
       "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-banashankari_bangalore",
-      "fetched_at": "2026-10-29T19:36:24Z"
+      "fetched_at": "2026-10-30T04:33:07Z",
+      "evidence": [
+        {
+          "date": "2026-10-30",
+          "title": "15 comparable 2 BHK listings, median ₹18,000",
+          "label": "NoBroker search page",
+          "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-banashankari_bangalore"
+        },
+        {
+          "date": "2026-10-30",
+          "title": "29 comparable 2 BHK listings, median ₹31,500",
+          "label": "MagicBricks search page",
+          "source_url": "https://www.magicbricks.com/2-bhk-flats-for-rent-in-banashankari-bangalore-pppfr"
+        },
+        {
+          "date": "2026-10-30",
+          "title": "Cheapest comparable: ₹15,000 in Banashankari",
+          "label": "NoBroker listing",
+          "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-bangalore-for-rs-15000/8a9fad95817a208701817a720d8a35a5/detail"
+        }
+      ]
     },
     {
       "id": "water_source",
       "status": "verified",
       "headline": "Listing says: \"Water Supply Both Corporation and Borewell\" (municipal supply, per owner)",
       "details": [
-        "Listing text: …ell ##### Facing ##### North Corporation and Borewell ##### Water Supply ##### Both Corporation and Borewell ##### No. of Floors ##### 2/3 Corporation and Borewell ####…",
+        "Listing text: …ell Facing North Corporation and Borewell Water Supply Both Corporation and Borewell No. of Floors 2/3 Corporation and Borewell…",
         "Area-level context only: 'Banashankari' is listed under BWSSB Cauvery Stage 2 (OpenCity dataset updated 27 Nov 2025). This does not show that this building is connected or that supply is adequate."
       ],
       "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-3rd-stage-banashankari-bangalore-for-rs-26000/8aa9b093a0e86fc401a0eb23fcaa24b3/detail",
-      "fetched_at": "2026-10-29T19:36:21Z"
+      "fetched_at": "2026-10-30T04:33:02Z",
+      "evidence": [
+        {
+          "date": null,
+          "title": "…ell Facing North Corporation and Borewell Water Supply Both Corporation and Borewell No. of Floors 2/3 Corporation and Borewell…",
+          "label": "Listing (Nobroker)",
+          "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-3rd-stage-banashankari-bangalore-for-rs-26000/8aa9b093a0e86fc401a0eb23fcaa24b3/detail"
+        },
+        {
+          "date": "2025-11-27",
+          "title": "Area listed in BWSSB Cauvery supply stages (area context only)",
+          "label": "Dataset (BWSSB via OpenCity)",
+          "source_url": "https://data.opencity.in/dataset/bwssb-stage-wise-cauvery-water-supply-areas"
+        }
+      ]
     }
   ],
   "good": [
@@ -237,12 +492,12 @@
   ],
   "watch_out": [
     {
-      "text": "No water cuts in last 30 days · 3 news reports in past 12 months (latest 22 Sep 2026)",
+      "text": "No water cuts in last 30 days · 3 city-wide lists in past 12 months (latest 22 Sep 2026)",
       "source_label": null,
       "source_url": "https://www.oneindia.com/bengaluru/bengaluru-water-supply-cut-these-areas-may-face-cauvery-water-disruption-today-8212111.html"
     },
     {
-      "text": "1 power cut in last 30 days (1 news report) · 5 news reports in past 12 months (latest 29 Oct 2026)",
+      "text": "1 power cut in last 30 days (1 city-wide list) · 6 city-wide lists in past 12 months (latest 29 Oct 2026)",
       "source_label": null,
       "source_url": "https://urbanacres.in/bengaluru-power-cut-bescom-lists-50-plus-areas-for-october-31/"
     }
@@ -289,7 +544,7 @@
       "monthly_saving": 11000,
       "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-banashankari-bangalore-for-rs-15000/8a9fad95817a208701817a720d8a35a5/detail"
     },
-    "fetched_at": "2026-10-29T19:36:24Z"
+    "fetched_at": "2026-10-30T04:33:07Z"
   },
   "residents": {
     "status": "could_not_verify",
@@ -298,8 +553,6 @@
     "themes": [],
     "quotes": []
   },
-  "questions_for_owner": [
-    "How often does the power go out, and is there backup?"
-  ],
+  "questions_for_owner": [],
   "summary_method": "llm"
 }

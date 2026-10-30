@@ -44,11 +44,18 @@ OFFICIAL_TTL_SECONDS = 6 * 3600
 OFFICIAL_AGENT_MAX_SECONDS = 240  # agent runs on these sites took ~250 s
 OFFICIAL_BUDGET_SECONDS = 280
 NEWS_BUDGET_SECONDS = 120
-MAX_NEWS_ARTICLES = 20
+MAX_NEWS_ARTICLES = 40  # Fetch is free up to 1,000 URLs/day; Search results vary run to run
 MAX_DOCS_PER_SOURCE = 8
+# A news report whose title names the area counts fully; a city-wide "full list of areas"
+# roundup that only mentions it in the body counts half. Official notices count fully.
+CITYWIDE_NEWS_WEIGHT = 0.5
 
 CACHE_DIR = Path(__file__).resolve().parent.parent / "cache"
 DOC_CACHE_DIR = CACHE_DIR / "official_docs"
+# TinyFish Search returns a few, varying results per call, so a real report found once can be
+# missing the next time. Reports that passed every filter are remembered per source and area
+# and merged into later scans while they are still inside the 12-month window.
+NEWS_MEMORY_DIR = CACHE_DIR / "news_memory"
 
 PAGE_AGENT_SCHEMA = {
     "type": "object",
@@ -102,6 +109,8 @@ SOURCES: dict[str, dict[str, Any]] = {
             re.I,
         ),
         "queries": ["BESCOM power cut {place}", "power outage {place} Bengaluru"],
+        # City-wide outage lists name many areas; the article text must still name ours.
+        "city_queries": ["Bengaluru power cut today BESCOM areas", "BESCOM scheduled power outage list Bengaluru"],
     },
     "bwssb": {
         "label": "BWSSB",
@@ -113,6 +122,7 @@ SOURCES: dict[str, dict[str, Any]] = {
             re.I,
         ),
         "queries": ["BWSSB water supply {place}", "water supply disruption {place} Bengaluru"],
+        "city_queries": ["BWSSB water supply disruption Bengaluru areas", "Bengaluru Cauvery water supply cut areas"],
     },
 }
 
@@ -323,14 +333,22 @@ async def news_events(source: dict[str, Any], locality: str, since: date) -> tup
     words = match_words(locality)
     place = match_area(locality)
     seen: dict[str, dict[str, Any]] = {}
-    for q in source["queries"]:
-        for page in (0, 1):
-            results = await tf.search(q.format(place=place), location="IN", language="en", domain_type="news",
+    searches = [(q.format(place=place), page) for q in source["queries"] for page in (0, 1)]
+    searches += [(q, 0) for q in source.get("city_queries", [])]
+    ok = 0
+    for query, page in searches:
+        try:
+            results = await tf.search(query, location="IN", language="en", domain_type="news",
                                       after_date=since.isoformat(), page=page)
-            for r in results:
-                url = r.get("url") or ""
-                if url.startswith("http") and url not in seen and source["topic_re"].search(r.get("title") or ""):
-                    seen[url] = r
+            ok += 1
+        except tf.TinyFishError:
+            continue  # one failed query (e.g. rate limit) shouldn't drop all news
+        for r in results:
+            url = r.get("url") or ""
+            if url.startswith("http") and url not in seen and source["topic_re"].search(r.get("title") or ""):
+                seen[url] = r
+    if not ok:
+        raise tf.TinyFishError("every news search failed")
     urls = list(seen)[:MAX_NEWS_ARTICLES]
     articles: list[dict[str, Any]] = []
     for i in range(0, len(urls), 10):
@@ -344,12 +362,51 @@ async def news_events(source: dict[str, Any], locality: str, since: date) -> tup
         title = (a.get("title") or meta.get("title") or "").strip()
         if not d or d < since or not source["topic_re"].search(title) or not names_place(f"{title} {text}", words):
             continue
-        by_day.setdefault(d.isoformat(), {
-            "kind": "news", "title": title, "date": d.isoformat(),
+        scope = "local" if names_place(title, words) else "citywide"
+        event = {
+            "kind": "news", "scope": scope, "title": title, "date": d.isoformat(),
+            "weight": 1.0 if scope == "local" else CITYWIDE_NEWS_WEIGHT,
             "publisher": meta.get("publisher") or meta.get("site_name") or "",
             "source_url": a.get("final_url") or a.get("url"),
-        })
-    return list(by_day.values()), len(articles)
+        }
+        # One event per date; a report about the area beats a city-wide list on the same day.
+        prev = by_day.get(d.isoformat())
+        if prev is None or (prev["scope"] == "citywide" and scope == "local"):
+            by_day[d.isoformat()] = event
+    fresh = list(by_day.values())
+    return merge_news_memory(source, place, fresh, since), len(articles)
+
+
+def news_memory_path(source: dict[str, Any], place: str) -> Path:
+    slug = re.sub(r"[^a-z0-9]+", "-", place.lower()).strip("-") or "unknown"
+    return NEWS_MEMORY_DIR / f"{source['label'].lower()}_{slug}.json"
+
+
+def merge_news_memory(source: dict[str, Any], place: str, fresh: list[dict[str, Any]], since: date) -> list[dict[str, Any]]:
+    """Union of this scan's reports and earlier verified ones, one per date (local beats city-wide)."""
+    path = news_memory_path(source, place)
+    try:
+        remembered = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else []
+    except (OSError, ValueError):
+        remembered = []
+    by_day: dict[str, dict[str, Any]] = {}
+    for e in remembered + fresh:  # fresh last, so it wins ties
+        d = parse_date(e.get("date"))
+        if not d or d < since or not (e.get("source_url") or "").startswith("http"):
+            continue
+        prev = by_day.get(e["date"])
+        # Keep a local report over a city-wide list; otherwise the later (fresher) entry wins.
+        if prev is None or not (prev.get("scope") == "local" and e.get("scope") == "citywide"):
+            by_day[e["date"]] = e
+    merged = sorted(by_day.values(), key=lambda e: e["date"], reverse=True)
+    try:
+        NEWS_MEMORY_DIR.mkdir(parents=True, exist_ok=True)
+        keep = [{k: e.get(k) for k in ("kind", "scope", "title", "date", "weight", "publisher", "source_url")}
+                for e in merged]
+        path.write_text(json.dumps(keep, indent=2, ensure_ascii=False), encoding="utf-8")
+    except OSError:
+        pass  # memory is best effort
+    return merged
 
 
 # ---------- the check ----------
@@ -385,14 +442,25 @@ async def run_notices_check(
 
     lines: list[str] = []
     events: list[dict[str, Any]] = []
+    unreadable: list[dict[str, Any]] = []
+    evidence: list[dict[str, Any]] = []  # every row a judge can click, incl. unread notices
     official_ok = not isinstance(official_res, BaseException)
     if not official_ok:
         why = "timed out" if isinstance(official_res, asyncio.TimeoutError) else str(official_res)[:160]
         lines.append(f"Official {source['label']} page could not be read ({why}).")
     else:
         off, unreadable = official_events(official_res, words, year_since)
+        for e in off:
+            e["weight"] = 1.0
         events += off
         latest = official_res.get("latest_notice_date")
+        evidence.append({"date": latest, "title": f"Notice list ({len(official_res.get('notices', []))} in past 12 months)",
+                         "label": f"Official {source['label']} page", "source_url": source["url"]})
+        for n in unreadable:
+            evidence.append({"date": n["date"], "title": n["title"],
+                             "label": f"Official {source['label']} notice — couldn't be fully read",
+                             "source_url": next((d["url"] for d in n.get("documents", []) if not d.get("readable")),
+                                                (n.get("urls") or [source["url"]])[0])})
         n_window = len(official_res.get("notices", []))
         lines.append(
             f"Official {source['label']} page read ({official_res.get('method')}): {n_window} notice"
@@ -417,8 +485,12 @@ async def run_notices_check(
 
     events.sort(key=lambda e: e["date"], reverse=True)
     for e in events:
-        e["label"] = f"Official {source['label']} notice" if e["kind"] == "official" else f"News report — {e['publisher']}"
+        if e["kind"] == "official":
+            e["label"] = f"Official {source['label']} notice"
+        else:
+            e["label"] = f"News report — {e['publisher']}" + (" (city-wide list)" if e["scope"] == "citywide" else "")
         e["window"] = "30d" if parse_date(e["date"]) >= recent_since else "12m"
+    evidence = events + evidence
     for e in reversed(events):
         lines.insert(0, f"{e['label']}, {fmt_day(e['date'])}: {e['title']} ({e['source_url']})")
 
@@ -433,42 +505,61 @@ async def run_notices_check(
             result["source_url"] = source["url"]
             return result
         latest = official_res.get("latest_notice_date")
-        _, unreadable = official_events(official_res, words, year_since)
         headline = f"No {plural} reported for {place} in the past 12 months"
         if unreadable:
             # Don't let unreadable notices read as "nothing here".
             headline += (f" · {len(unreadable)} official notice{'s' * (len(unreadable) != 1)} "
                          "couldn't be fully read")
-        return no_reports(
+        result = no_reports(
             check_id,
             headline,
             lines,
             source["url"],
             tag=f"None · page updated {fmt_day(latest)}" if latest else "None reported",
         )
+        result["evidence"] = evidence
+        return mark_partial(result, unreadable)
 
     def describe(evs: list[dict[str, Any]]) -> str:
         n_off = sum(e["kind"] == "official" for e in evs)
-        n_news = len(evs) - n_off
+        n_local = sum(e["kind"] == "news" and e["scope"] == "local" for e in evs)
+        n_city = len(evs) - n_off - n_local
         parts = []
         if n_off:
             parts.append(f"{n_off} official notice{'s' * (n_off != 1)}")
-        if n_news:
-            parts.append(f"{n_news} news report{'s' * (n_news != 1)}")
+        if n_local:
+            parts.append(f"{n_local} news report{'s' * (n_local != 1)} about {place}")
+        if n_city:
+            parts.append(f"{n_city} city-wide list{'s' * (n_city != 1)}")
         return " + ".join(parts)
 
     head_recent = f"{len(recent)} {noun if len(recent) == 1 else plural} in last 30 days ({describe(recent)})" \
         if recent else f"No {plural} in last 30 days"
     head_year = f"{describe(older)} in past 12 months" if older else "none earlier in past 12 months"
     headline = f"{head_recent} · {head_year} (latest {fmt_day(events[0]['date'])})"
-    return {
+    recent_w = sum(e["weight"] for e in recent)
+    older_w = sum(e["weight"] for e in older)
+    lines.append(f"Weighting: last 30 days full, 1-12 months half; city-wide lists count {CITYWIDE_NEWS_WEIGHT:g}x "
+                 f"(weighted {recent_w:g} recent + {older_w:g} older).")
+    result = {
         "id": check_id,
         "status": "verified",
-        "score": area_score(check_id, deduction_for(len(recent), len(older))),
+        "score": area_score(check_id, deduction_for(recent_w, older_w)),
         "tag": f"{len(recent)} in 30d · {len(events)} in 12m",
         "headline": headline,
         "details": lines,
         "findings": events,
+        "evidence": evidence,
         "source_url": events[0]["source_url"],
         "fetched_at": now_iso(),
     }
+    return mark_partial(result, unreadable)
+
+
+def mark_partial(result: dict[str, Any], unreadable: list[dict[str, Any]]) -> dict[str, Any]:
+    """Flag lower confidence when official notices in the window couldn't be read."""
+    if unreadable:
+        result["confidence"] = "partial"
+        result["partial_note"] = (f"{len(unreadable)} official notice{'s' * (len(unreadable) != 1)} "
+                                  "couldn't be fully read, so this may miss cuts")
+    return result

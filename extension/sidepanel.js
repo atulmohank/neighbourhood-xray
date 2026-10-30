@@ -39,6 +39,31 @@ function statusChip(status) {
   return h("span", { class: `chip status-${status}` }, STATUS_TEXT[status] || status);
 }
 
+function fmtDate(d) {
+  if (!d) return "";
+  const t = new Date(`${d}T00:00:00`);
+  return isNaN(t) ? d : t.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// One clickable row per piece of evidence: date · short title · source label · link.
+function evidenceRow(e) {
+  return h("li", { class: "ev" },
+    e.date ? h("span", { class: "ev-date mono" }, fmtDate(e.date)) : null,
+    h("span", { class: "ev-title" }, e.title || ""),
+    h("span", { class: "ev-label" }, e.label || ""),
+    sourceLink(e.source_url, "open"));
+}
+
+function openCheck(id) {
+  document.querySelector('.tab[data-tab="overview"]')?.click();
+  const d = document.getElementById(`check-${id}`);
+  if (!d) return;
+  d.open = true;
+  d.scrollIntoView({ behavior: "smooth", block: "start" });
+  d.classList.add("flash");
+  setTimeout(() => d.classList.remove("flash"), 1200);
+}
+
 // ---------- tabs ----------
 document.querySelectorAll(".tab").forEach((btn) =>
   btn.addEventListener("click", () => {
@@ -125,7 +150,13 @@ function renderOverview(r) {
     v.append(
       h("section", { class: "card" },
         h("div", { class: "label-row" }, h("span", { class: "label" }, "Sources checked")),
-        h("div", { class: "pills" }, r.sources.map((s) => h("span", { class: "pill" }, h("b", { class: "mono" }, s.count), " ", s.label)))
+        h("div", { class: "pills" }, r.sources.map((s) => {
+          if (!s.check_id) return h("span", { class: "pill" }, h("b", { class: "mono" }, s.count), " ", s.label);
+          // Clicking a source pill jumps to that check and opens its evidence rows.
+          const b = h("button", { class: "pill pill-link", title: "Show these sources" }, h("b", { class: "mono" }, s.count), " ", s.label, " ↓");
+          b.addEventListener("click", () => openCheck(s.check_id));
+          return b;
+        }))
       )
     );
   }
@@ -135,16 +166,22 @@ function renderOverview(r) {
       h("div", { class: "label-row" }, h("span", { class: "label" }, "Area scores")),
       (r.area_scores || []).map((a) => {
         const lvl = a.status === "could_not_verify" ? "unknown" : a.level || "unknown";
+        const partial = a.confidence === "partial";
+        // "No reports" from a source we could only partly read is not a confident 100/100.
+        const hideScore = partial && a.status === "no_reports";
         return h("div", { class: "area" },
           h("div", { class: "area-row" },
             h("span", { class: "area-label" }, a.label),
             h("span", { class: "area-right" },
               a.status === "stub" || a.status === "no_reports" ? statusChip(a.status) : null,
-              h("span", { class: `chip lvl-${lvl}` }, a.tag || STATUS_TEXT[a.status] || ""),
-              h("span", { class: "mono area-score" }, a.score == null ? "n/a" : [a.score, h("span", { class: "muted" }, "/100")])
+              partial ? h("span", { class: "chip chip-partial" }, "Partial data") : null,
+              hideScore ? null : h("span", { class: `chip lvl-${lvl}` }, a.tag || STATUS_TEXT[a.status] || ""),
+              h("span", { class: "mono area-score" },
+                a.score == null || hideScore ? "—" : [a.score, h("span", { class: "muted" }, "/100")])
             )
           ),
-          h("div", { class: "track" }, h("div", { class: `fill lvl-${lvl}`, style: `width:${a.score ?? 0}%` }))
+          h("div", { class: "track" }, h("div", { class: hideScore ? "fill partial" : `fill lvl-${lvl}`, style: `width:${hideScore ? 100 : a.score ?? 0}%` })),
+          partial && a.partial_note ? h("div", { class: "partial-note" }, a.partial_note) : null
         );
       })
     )
@@ -162,13 +199,18 @@ function renderOverview(r) {
   v.append(
     h("section", { class: "card" },
       h("div", { class: "label-row" }, h("span", { class: "label" }, "Checks")),
-      (r.checks || []).map((c) =>
-        h("details", { class: "check" },
+      (r.checks || []).map((c) => {
+        const rows = c.evidence || c.findings || [];
+        // Checks with hits start open so every claim's link is one glance away.
+        const hasHits = c.status === "verified" && ((c.findings || []).length || rows.length);
+        return h("details", { class: "check", id: `check-${c.id}`, open: hasHits ? "" : null },
           h("summary", {}, h("span", {}, c.headline), statusChip(c.status)),
-          h("ul", {}, (c.details || []).map((d) => h("li", {}, d))),
+          rows.length ? h("ul", { class: "evidence" }, rows.map(evidenceRow)) : null,
+          c.partial_note ? h("div", { class: "partial-note" }, c.partial_note) : null,
+          h("ul", { class: "check-notes" }, (c.details || []).filter((d) => !rows.some((e) => e.source_url && d.includes(e.source_url))).map((d) => h("li", {}, d))),
           h("div", { class: "check-foot" }, sourceLink(c.source_url), h("span", { class: "mono muted" }, c.fetched_at || ""))
-        )
-      )
+        );
+      })
     )
   );
 }

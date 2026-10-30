@@ -18,6 +18,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 FLOOD_KML = DATA_DIR / "flooding_vulnerable_locations.kml"
 FLOOD_DATASET_URL = "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
 FLOOD_DATASET_DATE = "27 Nov 2025"
+FLOOD_DATASET_ISO = "2025-11-27"
 FLOOD_DATASET_LABEL = "BBMP/KSRSAC flood-vulnerable locations (OpenCity)"
 
 CAUVERY_CSV = DATA_DIR / "bwssb_cauvery_stage_areas.csv"

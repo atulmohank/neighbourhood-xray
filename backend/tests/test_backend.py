@@ -353,3 +353,64 @@ def test_water_source_fetches_listing_when_sent_text_is_silent(monkeypatch):
     assert r["status"] == "verified" and r["score"] == 100
     # Live-page innerText can run the label and value together.
     assert ws.check_water_source(listing, "Water SupplyCorporation")["status"] == "verified"
+
+
+def test_summary_wording_follows_check_states():
+    import summary
+
+    checks = [
+        {"id": "water_cuts", "status": "no_reports", "headline": "No water cuts reported"},
+        {"id": "power_cuts", "status": "verified", "headline": "2 power cuts in last 30 days"},
+    ]
+    text = summary.build_summary(checks)
+    assert "No reports found: water cuts." in text and "Could not verify" not in text
+    assert not summary.wording_matches_states("Water cuts could not be verified.", checks)
+    assert summary.wording_matches_states("No water cut reports were found.", checks)
+    checks.append({"id": "rent_compare", "status": "could_not_verify", "headline": "x"})
+    assert "Could not verify: rent compare." in summary.build_summary(checks)
+
+
+def test_news_weighting_and_same_day_dedupe(monkeypatch, tmp_path):
+    from datetime import date
+
+    import tinyfish_client as tf
+    from checks import notices as nt
+
+    monkeypatch.setattr(nt, "NEWS_MEMORY_DIR", tmp_path)  # never write fake articles into the real memory
+
+    arts = {
+        "https://n/a": ("Power cut in Banashankari on Oct 31", "2026-10-29", "Banashankari 3rd stage affected"),
+        "https://n/b": ("Bengaluru power cut: full list of areas", "2026-10-29", "Areas: Jayanagar, Banashankari"),
+        "https://n/c": ("Bengaluru power outage list for June 20", "2026-06-20", "Banashankari, BTM"),
+        "https://n/d": ("Bengaluru power cut areas", "2026-06-21", "Only Whitefield"),  # doesn't name the area
+    }
+
+    async def fake_search(query, **kw):
+        return [{"url": u, "title": t[0], "publisher": "X"} for u, t in arts.items()]
+
+    async def fake_fetch(urls, **kw):
+        return [{"url": u, "title": arts[u][0], "published_date": arts[u][1], "text": arts[u][2]} for u in urls], []
+
+    monkeypatch.setattr(tf, "search", fake_search)
+    monkeypatch.setattr(tf, "fetch", fake_fetch)
+    events, _ = asyncio.run(nt.news_events(nt.SOURCES["bescom"], "Banashankari", date(2025, 10, 30)))
+    by_date = {e["date"]: e for e in events}
+    assert set(by_date) == {"2026-10-29", "2026-06-20"}  # one per date; Whitefield-only article dropped
+    assert by_date["2026-10-29"]["scope"] == "local" and by_date["2026-10-29"]["weight"] == 1.0
+    assert by_date["2026-06-20"]["scope"] == "citywide" and by_date["2026-06-20"]["weight"] == 0.5
+
+
+def test_news_memory_keeps_earlier_reports(monkeypatch, tmp_path):
+    from datetime import date
+
+    from checks import notices as nt
+
+    monkeypatch.setattr(nt, "NEWS_MEMORY_DIR", tmp_path)
+    src, since = nt.SOURCES["bwssb"], date(2025, 10, 30)
+    first = [{"kind": "news", "scope": "citywide", "title": "A", "date": "2026-09-22", "weight": 0.5, "source_url": "https://a"}]
+    assert len(nt.merge_news_memory(src, "Banashankari", first, since)) == 1
+    later = [{"kind": "news", "scope": "local", "title": "B", "date": "2026-10-07", "weight": 1.0, "source_url": "https://b"}]
+    merged = nt.merge_news_memory(src, "Banashankari", later, since)  # search missed A this time
+    assert [e["date"] for e in merged] == ["2026-10-07", "2026-09-22"]
+    old = [{"kind": "news", "scope": "local", "title": "C", "date": "2025-01-01", "weight": 1.0, "source_url": "https://c"}]
+    assert all(e["date"] != "2025-01-01" for e in nt.merge_news_memory(src, "Banashankari", old, since))

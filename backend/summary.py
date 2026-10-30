@@ -27,8 +27,18 @@ SYSTEM_PROMPT = (
     "Use ONLY the facts in the JSON you are given: do not add places, numbers, dates, sources or claims. "
     "Only call something an official notice, a news report or a dataset if the fact text itself says so; "
     "otherwise do not name a source type. Keep numbers exactly as given (digits). "
-    "Say briefly which checks could not be verified. Do not give advice."
+    "Each check has a 'state'. Use its wording exactly: 'verified finding' = report the finding; "
+    "'no reports found' = say no reports were found (never call it unverified); "
+    "'could not verify' = say it could not be verified (only for those). Do not give advice."
 )
+
+STATE_TEXT = {
+    "verified": "verified finding",
+    "no_reports": "no reports found",
+    "could_not_verify": "could not verify",
+    "stub": "demo data",
+}
+UNVERIFIED_WORDS = re.compile(r"could not (be )?verif|couldn.t (be )?verif|not verified|unverified|unconfirmed", re.I)
 
 # Generic questions keyed by check id. They ask about a topic; they do not
 # assert anything about the listing.
@@ -42,15 +52,21 @@ _TOPIC_QUESTIONS: dict[str, str] = {
 
 
 def build_summary(checks: list[dict[str, Any]]) -> str:
-    """Template summary: restates check headlines only."""
-    usable = [c for c in checks if c["status"] != "could_not_verify"]
-    missing = [c["id"].replace("_", " ") for c in checks if c["status"] == "could_not_verify"]
-    parts = []
-    if usable:
-        parts.append(" ".join(f"{c['headline']}." for c in usable))
-    if missing:
-        parts.append("Could not verify: " + ", ".join(missing) + ".")
+    """Template summary: restates check headlines, worded by state."""
+    def names(status: str) -> list[str]:
+        return [c["id"].replace("_", " ") for c in checks if c["status"] == status]
+
+    parts = [f"{c['headline']}." for c in checks if c["status"] in {"verified", "stub"}]
+    if names("no_reports"):
+        parts.append("No reports found: " + ", ".join(names("no_reports")) + ".")
+    if names("could_not_verify"):
+        parts.append("Could not verify: " + ", ".join(names("could_not_verify")) + ".")
     return " ".join(parts)
+
+
+def wording_matches_states(text: str, checks: list[dict[str, Any]]) -> bool:
+    """'Could not verify' language is only allowed when some check really is could_not_verify."""
+    return bool(not UNVERIFIED_WORDS.search(text) or any(c["status"] == "could_not_verify" for c in checks))
 
 
 def llm_enabled() -> bool:
@@ -65,7 +81,8 @@ def summary_facts(report: dict[str, Any]) -> dict[str, Any]:
         "score": report.get("score"),
         "verdict": report.get("verdict"),
         "checks": [
-            {"id": c["id"], "status": c["status"], "headline": c["headline"], "details": c.get("details", [])[:4]}
+            {"id": c["id"], "state": STATE_TEXT.get(c["status"], c["status"]), "headline": c["headline"],
+             "details": c.get("details", [])[:4]}
             for c in report.get("checks", [])
         ],
     }
@@ -101,7 +118,12 @@ async def generate_summary(report: dict[str, Any]) -> tuple[str, str]:
         text = " ".join((r.json()["choices"][0]["message"].get("content") or "").split())
     except Exception:  # timeout, HTTP error, bad JSON: never block the report on the LLM
         return fallback, "template"
-    if not text or len(text.split()) > SUMMARY_MAX_WORDS or not numbers_grounded(text, facts_json):
+    if (
+        not text
+        or len(text.split()) > SUMMARY_MAX_WORDS
+        or not numbers_grounded(text, facts_json)
+        or not wording_matches_states(text, report.get("checks", []))
+    ):
         return fallback, "template"
     return text, "llm"
 

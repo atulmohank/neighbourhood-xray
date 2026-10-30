@@ -281,6 +281,13 @@ async def check_rent(listing: dict[str, Any]) -> dict[str, Any]:
             *notes,
         ],
         "source_url": rc["portals"][0]["source_url"],
+        "evidence": [
+            *({"date": rc["fetched_at"][:10], "title": f"{p['listings']} comparable {bhk} BHK listings, median ₹{p['median']:,}",
+               "label": f"{p['name']} search page", "source_url": p["source_url"]} for p in rc["portals"]),
+            {"date": rc["fetched_at"][:10],
+             "title": f"Cheapest comparable: ₹{rc['cheapest_comparable']['rent']:,} in {rc['cheapest_comparable']['locality']}",
+             "label": f"{rc['cheapest_comparable']['portal']} listing", "source_url": rc["cheapest_comparable"]["source_url"]},
+        ],
         "fetched_at": now_iso(),
         "rent_compare": rc,
     }

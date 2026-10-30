@@ -100,11 +100,15 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
             "level": level_for(r["score"]),
             "tag": r["tag"],
             "status": r["status"],
+            # "partial": some official notices couldn't be read; the UI shows a partial-data tag
+            # instead of a confident 100/100.
+            **({"confidence": r["confidence"], "partial_note": r.get("partial_note")} if r.get("confidence") else {}),
         }
         for r in results
     ]
     checks = [
-        {k: r[k] for k in ("id", "status", "headline", "details", "source_url", "fetched_at", "findings") if k in r}
+        {k: r[k] for k in ("id", "status", "headline", "details", "source_url", "fetched_at", "findings", "evidence",
+                           "confidence", "partial_note") if k in r}
         for r in results
     ]
     score, verdict = score_report(area_scores)
@@ -116,7 +120,14 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
             watch_out.append(item)
         else:
             good.append(item)
-    sourced = [c for c in checks if c["source_url"]]
+    sources = []
+    for c in checks:
+        links = {e["source_url"] for e in c.get("evidence", []) if (e.get("source_url") or "").startswith("http")}
+        if not links and (c.get("source_url") or "").startswith("http"):
+            links = {c["source_url"]}
+        if links:
+            sources.append({"id": c["id"], "check_id": c["id"], "label": AREA_LABELS.get(c["id"], c["id"]),
+                            "count": len(links)})
     data_mode = "live" if is_live_mode() else "stub"
     return {
         "schema_version": "0.1.0",
@@ -137,8 +148,9 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         "checked_count": checked_count(area_scores),
         "unverified_checks": unverified_labels(area_scores),
         "summary": build_summary(checks),
-        "sources_count": len(sourced),
-        "sources": [],
+        "sources_count": sum(s["count"] for s in sources),
+        # One pill per check; the side panel jumps to and opens that check's evidence rows.
+        "sources": sources,
         "area_scores": area_scores,
         "checks": checks,
         "good": good,
