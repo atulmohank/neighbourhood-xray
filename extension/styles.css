@@ -269,3 +269,7 @@ details.check.flash { background: #FBF3E3; transition: background .3s; border-ra
 .sent-chip.sent-positive { background: #E5EEE7; color: var(--good); }
 .sent-chip.sent-neutral, .sent-chip.sent-mixed { background: #F7ECD8; color: var(--watch); }
 .quote-foot { align-items: center; gap: 8px; }
+
+/* empty state on open */
+.empty-state { margin: 4px 6px; color: var(--ink-2); font-size: 13.5px; }
+.mode-pill.mode-ready { color: var(--mute); border-color: var(--line); }

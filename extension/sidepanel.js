@@ -553,6 +553,19 @@ async function startScan(demo = false) {
   };
 }
 
+function showEmpty() {
+  const pill = $("mode-pill");
+  pill.textContent = "READY";
+  pill.className = "mode-pill mode-ready";
+  $("data-banner").classList.add("hidden");
+  $("rent-badge").textContent = "";
+  $("residents-badge").textContent = "";
+  $("view-overview").replaceChildren(h("p", { class: "empty-state" }, "Click Scan to check this area live."));
+  for (const id of ["view-rent", "view-residents", "view-ask"]) {
+    $(id).replaceChildren(h("p", { class: "empty-state" }, "Click Scan to check this area live."));
+  }
+}
+
 async function showExample() {
   const report = await (await fetch(EXAMPLE_URL)).json();
   render(report);
@@ -562,6 +575,7 @@ $("btn-scan").addEventListener("click", () => startScan(false));
 $("btn-replay").addEventListener("click", () => startScan(true));
 $("btn-example").addEventListener("click", showExample);
 
-showExample().catch((err) => showError(`Could not load example data: ${err.message}`));
+// Open on an empty state: no report until the user scans (or asks for the example).
+showEmpty();
 if (globalThis.chrome?.tabs) loadListingFromTab();
 else $("extract-state").textContent = "Enter the locality manually";
