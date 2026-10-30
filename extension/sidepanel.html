@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="sticky-top" id="sticky-top">
   <header class="panel-head">
     <div class="brand">
       <div class="logo">X</div>
@@ -15,8 +16,12 @@
         <div class="brand-sub mono" id="listing-sub">No listing yet</div>
       </div>
     </div>
-    <span class="mode-pill" id="mode-pill">EXAMPLE</span>
+    <span class="mode-pill mode-ready" id="mode-pill">READY</span>
   </header>
+  <div class="compact-listing hidden" id="compact-listing">
+    <span id="compact-text"></span>
+    <button class="link-btn" id="btn-edit" type="button">Edit</button>
+  </div>
 
   <nav class="tabs" role="tablist">
     <button class="tab active" data-tab="overview" role="tab">Overview</button>
@@ -24,12 +29,16 @@
     <button class="tab" data-tab="residents" role="tab">Residents <span class="tab-badge mono" id="residents-badge"></span></button>
     <button class="tab" data-tab="ask" role="tab">Ask</button>
   </nav>
+  </div>
 
   <main>
-    <div class="data-banner" id="data-banner"></div>
+    <div class="data-banner hidden" id="data-banner"></div>
 
     <section class="card scan-card">
-      <div class="label-row"><span class="label">Listing</span><span class="label" id="extract-state"></span></div>
+      <div class="label-row">
+        <span class="label">Listing <button class="link-btn read-page" id="btn-read-page" type="button">Read from page</button></span>
+        <span class="label" id="extract-state"></span>
+      </div>
       <label class="field">
         <span>Locality</span>
         <input id="in-locality" type="text" placeholder="e.g. HSR Layout Sector 2, Bengaluru" autocomplete="off">
@@ -42,6 +51,7 @@
         <button class="btn" id="btn-scan">Scan neighbourhood</button>
         <button class="btn ghost" id="btn-example">Show example</button>
       </div>
+      <button class="btn ghost btn-replay" id="btn-replay" title="Replays the last saved live scan for this locality (or the latest one) — use if the internet is down">Replay cached scan</button>
       <div class="progress hidden" id="progress">
         <div class="progress-head"><span class="label" id="progress-label">Starting…</span><span class="mono" id="progress-count"></span></div>
         <div class="bar"><div class="bar-fill" id="progress-fill"></div></div>

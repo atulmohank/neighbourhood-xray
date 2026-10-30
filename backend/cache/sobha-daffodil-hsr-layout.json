@@ -1,0 +1,726 @@
+{
+  "schema_version": "0.1.0",
+  "data_mode": "live",
+  "disclaimer": "",
+  "scan_id": "f922e8cc5ecd",
+  "generated_at": "2026-10-30T05:59:29Z",
+  "duration_seconds": 56.3,
+  "listing": {
+    "locality": "Sobha Daffodil HSR Layout",
+    "rent": 40000,
+    "bhk": 2,
+    "listing_url": "https://www.magicbricks.com/propertyDetails/2-BHK-1198-Sq-ft-Multistorey-Apartment-FOR-Rent-HSR-Layout-in-Bangalore&id=4d423837313431363439",
+    "source": "magicbricks"
+  },
+  "area": "HSR Layout",
+  "score": 83,
+  "verdict": "Looks good",
+  "checked_count": 5,
+  "unverified_checks": [],
+  "summary": "Sobha Daffodil in HSR Layout shows no water‑cut reports and, according to a verified finding, no power cuts in the past 30 days. The ward has four officially flood‑vulnerable spots, and the ₹40,000 rent is 13 % below the ₹46,000 median for a 2 BHK. No reports were found about the building’s water source.",
+  "sources_count": 21,
+  "sources": [
+    {
+      "id": "water_cuts",
+      "check_id": "water_cuts",
+      "label": "Water supply",
+      "count": 3
+    },
+    {
+      "id": "power_cuts",
+      "check_id": "power_cuts",
+      "label": "Power",
+      "count": 12
+    },
+    {
+      "id": "flooding",
+      "check_id": "flooding",
+      "label": "Flood risk",
+      "count": 1
+    },
+    {
+      "id": "rent_compare",
+      "check_id": "rent_compare",
+      "label": "Rent value",
+      "count": 3
+    },
+    {
+      "id": "water_source",
+      "check_id": "water_source",
+      "label": "Water source",
+      "count": 2
+    }
+  ],
+  "area_scores": [
+    {
+      "id": "water_cuts",
+      "label": "Water supply",
+      "score": 100,
+      "level": "good",
+      "tag": "None · page updated 31 Jul 2026",
+      "status": "no_reports",
+      "confidence": "partial",
+      "partial_note": "2 official notices couldn't be fully read, so this may miss cuts"
+    },
+    {
+      "id": "power_cuts",
+      "label": "Power",
+      "score": 63,
+      "level": "watch",
+      "tag": "0 in 30d · 10 in 12m",
+      "status": "verified",
+      "confidence": "partial",
+      "partial_note": "2 official notices couldn't be fully read, so this may miss cuts"
+    },
+    {
+      "id": "flooding",
+      "label": "Flood risk",
+      "score": 60,
+      "level": "watch",
+      "tag": "4 official flood spots",
+      "status": "verified"
+    },
+    {
+      "id": "rent_compare",
+      "label": "Rent value",
+      "score": 100,
+      "level": "good",
+      "tag": "-13% vs median",
+      "status": "verified"
+    },
+    {
+      "id": "water_source",
+      "label": "Water source",
+      "score": 100,
+      "level": "good",
+      "tag": "Not stated",
+      "status": "no_reports"
+    }
+  ],
+  "checks": [
+    {
+      "id": "water_cuts",
+      "status": "no_reports",
+      "headline": "No water cuts reported for HSR Layout in the past 12 months · 2 official notices couldn't be fully read",
+      "details": [
+        "Official BWSSB page read (page HTML): 2 notices in the past 12 months, 0 naming HSR Layout; page last updated 31 Jul 2026.",
+        "2 official notices in the window could not be read (scanned image or legacy-font Kannada), so their area lists are incomplete: Water Shutdown on 31-07-2026. · 27.07.2026 (31 Jul 2026); Water Shutdown on 22-07-2026. · 20.07.2026 (22 Jul 2026)",
+        "News: 0 reports naming HSR Layout in 12 months (6 articles checked)."
+      ],
+      "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en",
+      "fetched_at": "2026-10-30T05:58:54Z",
+      "evidence": [
+        {
+          "date": "2026-07-31",
+          "title": "Notice list (2 in past 12 months)",
+          "label": "Official BWSSB page",
+          "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en"
+        },
+        {
+          "date": "2026-07-31",
+          "title": "Water Shutdown on 31-07-2026. · 27.07.2026",
+          "label": "Official BWSSB notice — couldn't be fully read",
+          "source_url": "https://bwssb.karnataka.gov.in/uploads/shutdown31_1785306237.pdf"
+        },
+        {
+          "date": "2026-07-22",
+          "title": "Water Shutdown on 22-07-2026. · 20.07.2026",
+          "label": "Official BWSSB notice — couldn't be fully read",
+          "source_url": "https://bwssb.karnataka.gov.in/uploads/Shut%20Down%20Areas%20Stage%204%20Phase-I_1784618234.pdf"
+        }
+      ],
+      "confidence": "partial",
+      "partial_note": "2 official notices couldn't be fully read, so this may miss cuts"
+    },
+    {
+      "id": "power_cuts",
+      "status": "verified",
+      "headline": "No power cuts in last 30 days · 10 city-wide lists in past 12 months (latest 22 Jul 2026)",
+      "details": [
+        "News report — Times Now (city-wide list), 22 Jul 2026: Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas (https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029)",
+        "News report — The Times of India (city-wide list), 22 Jun 2026: Power outage in some areas of Bengaluru (https://timesofindia.indiatimes.com/city/bengaluru/power-outage-in-some-areas-of-bengaluru/articleshow/131916633.cms)",
+        "News report — Times Now (city-wide list), 18 May 2026: Bengaluru Power Cut Today: Residents Slam BESCOM Over Hours-Long Electricity Cuts -  Check Here Area-Wise List (https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-may-18-hours-long-outage-to-hit-several-locations-is-your-area-affected-article-154341637)",
+        "News report — Goodreturns (city-wide list), 4 May 2026: Bengaluru Power Cut Today: Will Karnataka Capital Face Power Cut? Residents Report Outages, BESCOM Responds (https://www.goodreturns.in/news/bengaluru-power-cut-today-will-karnataka-capital-face-power-cut-residents-report-outages-bescom-r-1506103.html)",
+        "News report — Goodreturns (city-wide list), 23 Apr 2026: Bengaluru Power Cut Today: Power Disruption Reported In Key Areas; BESCOM Reveals Fix Timeline (https://www.goodreturns.in/news/bengaluru-power-cut-today-power-disruption-reported-in-key-areas-bescom-reveals-fix-timeline-1504063.html)",
+        "News report — The Hindu (city-wide list), 3 Apr 2026: Despite regular maintenance, outages remain a constant in Bengaluru (https://www.thehindu.com/news/cities/bangalore/despite-regular-maintenance-outages-remain-a-constant-in-bengaluru/article70819873.ece)",
+        "News report — News18 (city-wide list), 24 Mar 2026: Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week (https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html)",
+        "News report — Goodreturns (city-wide list), 18 Mar 2026: BESCOM Power Cut Today: Areas In Bengaluru, Other Karnataka Districts To Face Power Outage Amid Rainfall Alert (https://www.goodreturns.in/news/bengaluru-power-cut-today-march-18-bescom-update-karnataka-chitradurga-power-outage-imd-rainfall-ale-1496667.html)",
+        "News report — Goodreturns (city-wide list), 10 Feb 2026: Bengaluru Power Cut On February 10 & February 11: BESCOM Declares Power Outage Up To 7-Hours; Affected Areas (https://www.goodreturns.in/news/bengaluru-power-cut-on-february-10-february-11-bescom-power-outage-for-7-hours-affected-areas-list-1488281.html)",
+        "News report — The News Minute (city-wide list), 9 Feb 2026: Bengaluru: Power shutdown across several areas on Feb 10 and 11 for maintenance (https://www.thenewsminute.com/karnataka/bengaluru-power-shutdown-across-several-areas-on-feb-10-and-11-for-maintenance)",
+        "Official BESCOM page read (page HTML): 5 notices in the past 12 months, 0 naming HSR Layout; page last updated 1 Jul 2026.",
+        "2 official notices in the window could not be read (scanned image or legacy-font Kannada), so their area lists are incomplete: FY 2025-26 · Contingency Power Outages details of BESCOM (31 Mar 2026); JULY 2026 · Contingency Power Outages details of BESCOM (1 Jul 2026)",
+        "News: 10 reports naming HSR Layout in 12 months (17 articles checked).",
+        "Weighting: last 30 days full, 1-12 months half; city-wide lists count 0.5x (weighted 0 recent + 5 older)."
+      ],
+      "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029",
+      "fetched_at": "2026-10-30T05:59:29Z",
+      "findings": [
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas",
+          "date": "2026-07-22",
+          "weight": 0.5,
+          "publisher": "Times Now",
+          "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029",
+          "label": "News report — Times Now (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Power outage in some areas of Bengaluru",
+          "date": "2026-06-22",
+          "weight": 0.5,
+          "publisher": "The Times of India",
+          "source_url": "https://timesofindia.indiatimes.com/city/bengaluru/power-outage-in-some-areas-of-bengaluru/articleshow/131916633.cms",
+          "label": "News report — The Times of India (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: Residents Slam BESCOM Over Hours-Long Electricity Cuts -  Check Here Area-Wise List",
+          "date": "2026-05-18",
+          "weight": 0.5,
+          "publisher": "Times Now",
+          "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-may-18-hours-long-outage-to-hit-several-locations-is-your-area-affected-article-154341637",
+          "label": "News report — Times Now (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: Will Karnataka Capital Face Power Cut? Residents Report Outages, BESCOM Responds",
+          "date": "2026-05-04",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-will-karnataka-capital-face-power-cut-residents-report-outages-bescom-r-1506103.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: Power Disruption Reported In Key Areas; BESCOM Reveals Fix Timeline",
+          "date": "2026-04-23",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-power-disruption-reported-in-key-areas-bescom-reveals-fix-timeline-1504063.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Despite regular maintenance, outages remain a constant in Bengaluru",
+          "date": "2026-04-03",
+          "weight": 0.5,
+          "publisher": "The Hindu",
+          "source_url": "https://www.thehindu.com/news/cities/bangalore/despite-regular-maintenance-outages-remain-a-constant-in-bengaluru/article70819873.ece",
+          "label": "News report — The Hindu (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week",
+          "date": "2026-03-24",
+          "weight": 0.5,
+          "publisher": "News18",
+          "source_url": "https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html",
+          "label": "News report — News18 (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "BESCOM Power Cut Today: Areas In Bengaluru, Other Karnataka Districts To Face Power Outage Amid Rainfall Alert",
+          "date": "2026-03-18",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-march-18-bescom-update-karnataka-chitradurga-power-outage-imd-rainfall-ale-1496667.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut On February 10 & February 11: BESCOM Declares Power Outage Up To 7-Hours; Affected Areas",
+          "date": "2026-02-10",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-on-february-10-february-11-bescom-power-outage-for-7-hours-affected-areas-list-1488281.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru: Power shutdown across several areas on Feb 10 and 11 for maintenance",
+          "date": "2026-02-09",
+          "weight": 0.5,
+          "publisher": "The News Minute",
+          "source_url": "https://www.thenewsminute.com/karnataka/bengaluru-power-shutdown-across-several-areas-on-feb-10-and-11-for-maintenance",
+          "label": "News report — The News Minute (city-wide list)",
+          "window": "12m"
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: BESCOM Announces Scheduled Outages In Jayanagar, Whitefield, Koramangala And Other Areas",
+          "date": "2026-07-22",
+          "weight": 0.5,
+          "publisher": "Times Now",
+          "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029",
+          "label": "News report — Times Now (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Power outage in some areas of Bengaluru",
+          "date": "2026-06-22",
+          "weight": 0.5,
+          "publisher": "The Times of India",
+          "source_url": "https://timesofindia.indiatimes.com/city/bengaluru/power-outage-in-some-areas-of-bengaluru/articleshow/131916633.cms",
+          "label": "News report — The Times of India (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: Residents Slam BESCOM Over Hours-Long Electricity Cuts -  Check Here Area-Wise List",
+          "date": "2026-05-18",
+          "weight": 0.5,
+          "publisher": "Times Now",
+          "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-may-18-hours-long-outage-to-hit-several-locations-is-your-area-affected-article-154341637",
+          "label": "News report — Times Now (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: Will Karnataka Capital Face Power Cut? Residents Report Outages, BESCOM Responds",
+          "date": "2026-05-04",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-will-karnataka-capital-face-power-cut-residents-report-outages-bescom-r-1506103.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut Today: Power Disruption Reported In Key Areas; BESCOM Reveals Fix Timeline",
+          "date": "2026-04-23",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-power-disruption-reported-in-key-areas-bescom-reveals-fix-timeline-1504063.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Despite regular maintenance, outages remain a constant in Bengaluru",
+          "date": "2026-04-03",
+          "weight": 0.5,
+          "publisher": "The Hindu",
+          "source_url": "https://www.thehindu.com/news/cities/bangalore/despite-regular-maintenance-outages-remain-a-constant-in-bengaluru/article70819873.ece",
+          "label": "News report — The Hindu (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Power Cut In Bengaluru: Full List Of Affected Areas And Timings This Week",
+          "date": "2026-03-24",
+          "weight": 0.5,
+          "publisher": "News18",
+          "source_url": "https://www.news18.com/cities/bengaluru-news/power-cut-in-bengaluru-full-list-of-affected-areas-and-timings-this-week-skn-ws-l-9994543.html",
+          "label": "News report — News18 (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "BESCOM Power Cut Today: Areas In Bengaluru, Other Karnataka Districts To Face Power Outage Amid Rainfall Alert",
+          "date": "2026-03-18",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-today-march-18-bescom-update-karnataka-chitradurga-power-outage-imd-rainfall-ale-1496667.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru Power Cut On February 10 & February 11: BESCOM Declares Power Outage Up To 7-Hours; Affected Areas",
+          "date": "2026-02-10",
+          "weight": 0.5,
+          "publisher": "Goodreturns",
+          "source_url": "https://www.goodreturns.in/news/bengaluru-power-cut-on-february-10-february-11-bescom-power-outage-for-7-hours-affected-areas-list-1488281.html",
+          "label": "News report — Goodreturns (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "kind": "news",
+          "scope": "citywide",
+          "title": "Bengaluru: Power shutdown across several areas on Feb 10 and 11 for maintenance",
+          "date": "2026-02-09",
+          "weight": 0.5,
+          "publisher": "The News Minute",
+          "source_url": "https://www.thenewsminute.com/karnataka/bengaluru-power-shutdown-across-several-areas-on-feb-10-and-11-for-maintenance",
+          "label": "News report — The News Minute (city-wide list)",
+          "window": "12m"
+        },
+        {
+          "date": "2026-07-01",
+          "title": "Notice list (5 in past 12 months)",
+          "label": "Official BESCOM page",
+          "source_url": "https://bescom.karnataka.gov.in/421/Contingency-Power-Outages/en"
+        },
+        {
+          "date": "2026-03-31",
+          "title": "FY 2025-26 · Contingency Power Outages details of BESCOM",
+          "label": "Official BESCOM notice — couldn't be fully read",
+          "source_url": "https://bescom.karnataka.gov.in/uploads/media_to_upload1785507451.pdf"
+        },
+        {
+          "date": "2026-07-01",
+          "title": "JULY 2026 · Contingency Power Outages details of BESCOM",
+          "label": "Official BESCOM notice — couldn't be fully read",
+          "source_url": "https://bescom.karnataka.gov.in/uploads/media_to_upload1785507451.pdf"
+        }
+      ],
+      "confidence": "partial",
+      "partial_note": "2 official notices couldn't be fully read, so this may miss cuts"
+    },
+    {
+      "id": "flooding",
+      "status": "verified",
+      "headline": "HSR Layout ward has 4 officially flood-vulnerable spots (as of 27 Nov 2025)",
+      "details": [
+        "HSR sector 2 Garden layout (ward HSR Layout)",
+        "HSR 3rd sector lead off drains (ward HSR Layout)",
+        "Sector 6 lead off drains surrounding 5th and 9th main (ward HSR Layout)",
+        "HSR layout 9th and 5th main (ward HSR Layout)",
+        "Source: BBMP/KSRSAC flood-vulnerable locations (OpenCity), dataset updated 27 Nov 2025; lists vulnerable spots, not dated incidents."
+      ],
+      "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban",
+      "fetched_at": "2026-10-30T05:58:33Z",
+      "evidence": [
+        {
+          "date": "2025-11-27",
+          "title": "HSR sector 2 Garden layout (ward HSR Layout)",
+          "label": "Official flood-vulnerable spot (BBMP/KSRSAC via OpenCity)",
+          "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
+        },
+        {
+          "date": "2025-11-27",
+          "title": "HSR 3rd sector lead off drains (ward HSR Layout)",
+          "label": "Official flood-vulnerable spot (BBMP/KSRSAC via OpenCity)",
+          "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
+        },
+        {
+          "date": "2025-11-27",
+          "title": "Sector 6 lead off drains surrounding 5th and 9th main (ward HSR Layout)",
+          "label": "Official flood-vulnerable spot (BBMP/KSRSAC via OpenCity)",
+          "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
+        },
+        {
+          "date": "2025-11-27",
+          "title": "HSR layout 9th and 5th main (ward HSR Layout)",
+          "label": "Official flood-vulnerable spot (BBMP/KSRSAC via OpenCity)",
+          "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
+        }
+      ]
+    },
+    {
+      "id": "rent_compare",
+      "status": "verified",
+      "headline": "Rent ₹40,000 is 13% below the ₹46,000 median for 2 BHK in HSR Layout (42 listings, NoBroker + MagicBricks)",
+      "details": [
+        "Middle half of listed rents: ₹35,000–₹55,000; range ₹22,000–₹70,000.",
+        "NoBroker: median ₹35,000 across 14 listings (https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore)",
+        "MagicBricks: median ₹50,000 across 28 listings (https://www.magicbricks.com/2-bhk-flats-for-rent-in-hsr-layout-bangalore-pppfr)",
+        "Cheapest comparable: ₹22,000 in Hsr Layout Sector 7 (https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-sector-7-bangalore-for-rs-22000/8aa9aa959f75a584019f7609d2602733/detail)",
+        "Listings as advertised today via TinyFish Fetch; not adjusted for size or furnishing.",
+        "Dropped 4 outlier listings outside 50%-200% of the median (₹14,000, ₹15,000, ₹18,000, ₹21,000)."
+      ],
+      "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore",
+      "fetched_at": "2026-10-30T05:58:39Z",
+      "evidence": [
+        {
+          "date": "2026-10-30",
+          "title": "14 comparable 2 BHK listings, median ₹35,000",
+          "label": "NoBroker search page",
+          "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore"
+        },
+        {
+          "date": "2026-10-30",
+          "title": "28 comparable 2 BHK listings, median ₹50,000",
+          "label": "MagicBricks search page",
+          "source_url": "https://www.magicbricks.com/2-bhk-flats-for-rent-in-hsr-layout-bangalore-pppfr"
+        },
+        {
+          "date": "2026-10-30",
+          "title": "Cheapest comparable: ₹22,000 in Hsr Layout Sector 7",
+          "label": "NoBroker listing",
+          "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-sector-7-bangalore-for-rs-22000/8aa9aa959f75a584019f7609d2602733/detail"
+        }
+      ]
+    },
+    {
+      "id": "water_source",
+      "status": "no_reports",
+      "headline": "Listing doesn't say where the water comes from",
+      "details": [
+        "The listing does not say where the water comes from.",
+        "Area-level context only: 'HSR Sector 1st to 7th sector' is listed under BWSSB Cauvery Stage 4 Ph 1 (OpenCity dataset updated 27 Nov 2025). This does not show that this building is connected or that supply is adequate."
+      ],
+      "source_url": "https://www.magicbricks.com/propertyDetails/2-BHK-1198-Sq-ft-Multistorey-Apartment-FOR-Rent-HSR-Layout-in-Bangalore&id=4d423837313431363439",
+      "fetched_at": "2026-10-30T05:58:38Z",
+      "evidence": [
+        {
+          "date": null,
+          "title": "No water source stated",
+          "label": "Listing (Magicbricks)",
+          "source_url": "https://www.magicbricks.com/propertyDetails/2-BHK-1198-Sq-ft-Multistorey-Apartment-FOR-Rent-HSR-Layout-in-Bangalore&id=4d423837313431363439"
+        },
+        {
+          "date": "2025-11-27",
+          "title": "Area listed in BWSSB Cauvery supply stages (area context only)",
+          "label": "Dataset (BWSSB via OpenCity)",
+          "source_url": "https://data.opencity.in/dataset/bwssb-stage-wise-cauvery-water-supply-areas"
+        }
+      ]
+    }
+  ],
+  "good": [
+    {
+      "text": "No water cuts reported for HSR Layout in the past 12 months · 2 official notices couldn't be fully read",
+      "source_label": null,
+      "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en"
+    },
+    {
+      "text": "Rent ₹40,000 is 13% below the ₹46,000 median for 2 BHK in HSR Layout (42 listings, NoBroker + MagicBricks)",
+      "source_label": null,
+      "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore"
+    },
+    {
+      "text": "Listing doesn't say where the water comes from",
+      "source_label": null,
+      "source_url": "https://www.magicbricks.com/propertyDetails/2-BHK-1198-Sq-ft-Multistorey-Apartment-FOR-Rent-HSR-Layout-in-Bangalore&id=4d423837313431363439"
+    }
+  ],
+  "watch_out": [
+    {
+      "text": "No power cuts in last 30 days · 10 city-wide lists in past 12 months (latest 22 Jul 2026)",
+      "source_label": null,
+      "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029"
+    },
+    {
+      "text": "HSR Layout ward has 4 officially flood-vulnerable spots (as of 27 Nov 2025)",
+      "source_label": null,
+      "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban"
+    }
+  ],
+  "rent_compare": {
+    "status": "verified",
+    "currency": "INR",
+    "listing_rent": 40000,
+    "fair_range": {
+      "low": 35000,
+      "high": 55000
+    },
+    "median": 46000,
+    "premium_percent": -13.0,
+    "monthly_extra": 0,
+    "yearly_overpay": 0,
+    "spread": {
+      "min": 22000,
+      "max": 70000,
+      "n": 42
+    },
+    "portals": [
+      {
+        "name": "NoBroker",
+        "median": 35000,
+        "listings": 14,
+        "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore"
+      },
+      {
+        "name": "MagicBricks",
+        "median": 50000,
+        "listings": 28,
+        "source_url": "https://www.magicbricks.com/2-bhk-flats-for-rent-in-hsr-layout-bangalore-pppfr"
+      }
+    ],
+    "cheapest_comparable": {
+      "rent": 22000,
+      "bhk": 2,
+      "area_sqft": null,
+      "locality": "Hsr Layout Sector 7",
+      "distance_m": null,
+      "note": null,
+      "portal": "NoBroker",
+      "monthly_saving": 18000,
+      "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-sector-7-bangalore-for-rs-22000/8aa9aa959f75a584019f7609d2602733/detail"
+    },
+    "fetched_at": "2026-10-30T05:58:39Z"
+  },
+  "residents": {
+    "status": "verified",
+    "place": "HSR Layout",
+    "window": "12 months",
+    "total_mentions": 8,
+    "themes": [
+      {
+        "id": "power",
+        "label": "Power cuts",
+        "mentions": 5,
+        "sentiment": "negative"
+      },
+      {
+        "id": "water",
+        "label": "Water / tankers",
+        "mentions": 3,
+        "sentiment": "negative"
+      },
+      {
+        "id": "rent",
+        "label": "Rent / landlords",
+        "mentions": 3,
+        "sentiment": "negative"
+      },
+      {
+        "id": "flooding",
+        "label": "Flooding / waterlogging",
+        "mentions": 2,
+        "sentiment": "negative"
+      },
+      {
+        "id": "traffic",
+        "label": "Traffic",
+        "mentions": 1,
+        "sentiment": "negative"
+      }
+    ],
+    "quotes": [
+      {
+        "text": "Anyways, who wants to rent 1 bhk for 30k, 180k deposit no brokerage /s",
+        "theme": "rent",
+        "source": "Reddit · r/bangalore",
+        "source_url": "https://www.reddit.com/r/bangalore/comments/1tq8b2q/hsr_layout_today/",
+        "posted_at": "2026-05-28",
+        "age": "5 months ago",
+        "sentiment": "neutral"
+      },
+      {
+        "text": "Nam Nagarbhavi nod guru, yentha flooding illa yenu illa, full ups downs indha neeru nadhi tara hogtha irutthe 😄",
+        "theme": "flooding",
+        "source": "Reddit · r/bangalore",
+        "source_url": "https://www.reddit.com/r/bangalore/comments/1tq8b2q/hsr_layout_today/",
+        "posted_at": "2026-05-28",
+        "age": "5 months ago",
+        "sentiment": "negative"
+      },
+      {
+        "text": "Think my apartment water has been contaminated HSR Layout",
+        "theme": "water",
+        "source": "Reddit · r/bangalore",
+        "source_url": "https://www.reddit.com/r/bangalore/comments/1t7hbhg/think_my_apartment_water_has_been_contaminated/",
+        "posted_at": "2026-05-08",
+        "age": "5 months ago",
+        "sentiment": "negative"
+      },
+      {
+        "text": "not sewage mixing but, once the overhead tank in our's had a dead bird ( as a reason for the water smell).",
+        "theme": "water",
+        "source": "Reddit · r/bangalore",
+        "source_url": "https://www.reddit.com/r/bangalore/comments/1t7hbhg/think_my_apartment_water_has_been_contaminated/",
+        "posted_at": "2026-05-08",
+        "age": "5 months ago",
+        "sentiment": "negative"
+      },
+      {
+        "text": "What’s with the constant power cuts in HSR?",
+        "theme": "power",
+        "source": "Reddit · r/HSRLayout",
+        "source_url": "https://www.reddit.com/r/HSRLayout/comments/1swwueq/whats_with_the_constant_power_cuts_in_hsr/",
+        "posted_at": "2026-04-27",
+        "age": "6 months ago",
+        "sentiment": "negative"
+      },
+      {
+        "text": "Was thinking of getting an AC with this heat,but what’s the point if there’s no power anyway 🥲",
+        "theme": "power",
+        "source": "Reddit · r/HSRLayout",
+        "source_url": "https://www.reddit.com/r/HSRLayout/comments/1swwueq/whats_with_the_constant_power_cuts_in_hsr/",
+        "posted_at": "2026-04-27",
+        "age": "6 months ago",
+        "sentiment": "neutral"
+      },
+      {
+        "text": "Anyone else experiencing power outage for the nth time this week?",
+        "theme": "power",
+        "source": "Reddit · r/HSRLayout",
+        "source_url": "https://www.reddit.com/r/HSRLayout/comments/1sg4aml/power_cut_in_hsr/",
+        "posted_at": "2026-04-08",
+        "age": "6 months ago",
+        "sentiment": "negative"
+      },
+      {
+        "text": "Update: As per BESCOM Twitter, it's scheduled to be restored by 03:30 AM approximately.",
+        "theme": "power",
+        "source": "Reddit · r/HSRLayout",
+        "source_url": "https://www.reddit.com/r/HSRLayout/comments/1sg4aml/power_cut_in_hsr/",
+        "posted_at": "2026-04-08",
+        "age": "6 months ago",
+        "sentiment": "neutral"
+      }
+    ],
+    "sources": [
+      {
+        "site": "Reddit",
+        "status": "ok",
+        "threads": 5
+      },
+      {
+        "site": "X",
+        "status": "ok",
+        "threads": 3
+      },
+      {
+        "site": "Quora",
+        "status": "could_not_verify",
+        "note": "bot blocked (not worked around)",
+        "threads": 0
+      }
+    ],
+    "fetched_at": "2026-10-30T04:57:41Z",
+    "note": "Quotes are verbatim sentences from public posts; usernames are not shown. Sentiment is automatic."
+  },
+  "questions_for_owner": [
+    "How often does the power go out, and is there backup?",
+    "Has the street or building flooded during recent monsoons?"
+  ],
+  "owner_questions": [
+    {
+      "text": "How often does the power go out, and is there backup?",
+      "from": "power check",
+      "check_id": "power_cuts"
+    },
+    {
+      "text": "Has the street or building flooded during recent monsoons?",
+      "from": "flood risk check",
+      "check_id": "flooding"
+    }
+  ],
+  "summary_method": "llm",
+  "degraded_checks": []
+}

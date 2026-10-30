@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ask tab mock</title>
+<style>
+:root{--paper:#F6F3EC;--card:#FFFDF8;--ink:#1C1A17;--ink2:#55504A;--mute:#8D867C;--line:#E7E1D6;--amber:#C98A12;--good:#4F7A5A;--watch:#B7791F;--risk:#A8432F;
+--sans:Inter,system-ui,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;--serif:Fraunces,Georgia,serif}
+*{box-sizing:border-box}body{margin:0;background:#2a2826;font:13px/1.5 var(--sans);color:var(--ink);display:flex;gap:32px;justify-content:center;padding:24px 16px;flex-wrap:wrap}
+.wrap{width:420px;max-width:100%}
+.cap{color:#e9e4da;font:600 12px var(--sans);letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px}
+.cap span{color:#b9b2a6;font-weight:400;text-transform:none;letter-spacing:0;display:block;margin-top:2px}
+.panel{background:var(--paper);border-radius:12px;overflow:hidden;height:780px;display:flex;flex-direction:column}
+.head{background:var(--card);padding:12px 16px 0;border-bottom:1px solid var(--line);position:sticky;top:0}
+.row{display:flex;align-items:center;gap:10px}
+.logo{width:30px;height:30px;border-radius:7px;background:var(--ink);color:var(--amber);display:grid;place-items:center;font-weight:700}
+.t{font-weight:600}.sub{font:11px var(--mono);color:var(--mute)}
+.pill{margin-left:auto;font:600 10px var(--mono);border:1px solid #CBDCCF;color:var(--good);border-radius:999px;padding:3px 8px}
+.compact{display:flex;justify-content:space-between;align-items:center;margin:10px 0 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:12px;color:var(--ink2)}
+.compact b{font-family:var(--mono);font-weight:500;color:var(--ink)}.compact a{color:var(--amber);font-weight:600;text-decoration:none}
+.tabs{display:flex;gap:18px;margin-top:10px}.tab{padding:8px 0;color:var(--mute);font-weight:500}
+.tab.on{color:var(--ink);border-bottom:2px solid var(--amber)}
+.tab i{font:normal 10px var(--mono);background:#EEE9DF;border-radius:4px;padding:1px 5px;margin-left:4px;color:var(--ink2)}
+.body{flex:1;overflow:auto;padding:12px 16px;display:grid;gap:12px;align-content:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.lbl{font:600 10px var(--mono);letter-spacing:.08em;color:var(--mute);text-transform:uppercase;display:flex;justify-content:space-between}
+.hint{font-size:12px;color:var(--ink2);margin:4px 0 10px}
+.composer{display:flex;gap:6px;border:1.5px solid var(--amber);border-radius:10px;padding:4px 4px 4px 12px;background:#fff}
+.composer input{flex:1;border:0;outline:0;font:13px var(--sans);background:transparent}
+.btn{background:var(--amber);color:#fff;border:0;border-radius:7px;padding:7px 14px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--ink2)}
+.thread{display:grid;gap:10px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.q{justify-self:end;background:var(--ink);color:var(--card);border-radius:12px 12px 2px 12px;padding:7px 12px;max-width:85%}
+.a{background:var(--paper);border:1px solid var(--line);border-radius:12px 12px 12px 2px;padding:9px 12px;max-width:92%}
+.a .src{display:flex;gap:8px;margin-top:6px;font:11px var(--mono)}
+.a .src a{color:var(--amber);text-decoration:none}
+.tag{font:600 10px var(--mono);border-radius:4px;padding:1px 6px}
+.tag.ok{color:var(--good);background:#E7EFE8}.tag.nr{color:var(--ink2);background:#EEE9DF}
+.a.miss{border-style:dashed}
+.addq{font-size:11px;color:var(--watch);margin-top:6px}
+.owner li{list-style:none;display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.owner ul{margin:8px 0 0;padding:0}.owner li:first-child{border-top:0}
+.owner small{display:block;color:var(--mute);font-size:11px}
+.new{font:600 9px var(--mono);color:var(--watch);border:1px solid #EBD7B0;border-radius:4px;padding:0 4px;margin-left:6px}
+.before .body{opacity:1}
+.bad{outline:2px dashed var(--risk);outline-offset:3px;border-radius:10px}
+.note{font-size:11px;color:var(--risk);margin:-6px 0 0}
+</style></head><body>
+
+<!-- AFTER -->
+<div class="wrap">
+  <p class="cap">Proposed: Ask tab<span>Everything for asking sits in one card at the top. Answers go straight under it. The owner checklist sits below, clearly separate.</span></p>
+  <div class="panel">
+    <div class="head">
+      <div class="row"><div class="logo">X</div><div><div class="t">Neighbourhood X-Ray</div><div class="sub">HSR Layout · 2 BHK</div></div><span class="pill">LIVE</span></div>
+      <div class="compact"><span>Rajiv Gandhi Nagar, 7th Sector · <b>₹30,000</b> · 2 BHK · <b>6/6</b> checked</span><a href="#">Edit</a></div>
+      <div class="tabs"><span class="tab">Overview</span><span class="tab">Rent<i>−35%</i></span><span class="tab">Residents<i>8</i></span><span class="tab on">Ask</span></div>
+    </div>
+    <div class="body">
+      <section class="card">
+        <div class="lbl">Ask about this area</div>
+        <p class="hint">Answers come only from this scan's 6 checks, with sources.</p>
+        <div class="composer"><input placeholder="e.g. Is there water trouble in summer?"><button class="btn">Ask</button></div>
+        <div class="chips"><span class="chip">Is water bad here?</span><span class="chip">Any power cuts recently?</span><span class="chip">Is the rent fair?</span><span class="chip">Does it flood?</span></div>
+
+        <div class="thread">
+          <div class="q">Is there water outage last month?</div>
+          <div class="a">No water cuts were reported for HSR Layout in this scan (past 12 months). 2 official notices couldn't be fully read.
+            <div class="src"><span class="tag nr">No reports</span><a href="#">BWSSB notices ↗</a></div></div>
+          <div class="q">Any power cuts recently?</div>
+          <div class="a">None reported in the last 30 days. 10 city-wide outage lists named HSR Layout in the past 12 months (latest 22 Jul 2026).
+            <div class="src"><span class="tag ok">Verified</span><a href="#">BESCOM ↗</a><a href="#">News ↗</a></div></div>
+          <div class="q">Is it safe at night?</div>
+          <div class="a miss"><b>Not in this scan.</b> We don't check safety.
+            <div class="addq">+ Added to "Ask the owner"</div></div>
+        </div>
+      </section>
+
+      <section class="card owner">
+        <div class="lbl"><span>Ask the owner · checklist</span><span>3</span></div>
+        <ul>
+          <li><input type="checkbox"><span>How often does the power go out, and is there backup?<small>From: power check</small></span></li>
+          <li><input type="checkbox"><span>Has the street or building flooded during recent monsoons?<small>From: 4 official flood spots</small></span></li>
+          <li><input type="checkbox"><span>Is the area safe at night?<span class="new">NEW</span><small>From your question</small></span></li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- BEFORE -->
+<div class="wrap">
+  <p class="cap">Now: what feels off<span>Red outlines: the check list, chat, checklist and input are stacked as separate pieces, so the input looks unrelated to the answers above it.</span></p>
+  <div class="panel before">
+    <div class="head">
+      <div class="row"><div class="logo">X</div><div><div class="t">Neighbourhood X-Ray</div><div class="sub">Rajiv Gandhi Nagar, 7th Sector… · 2 BHK</div></div><span class="pill">LIVE</span></div>
+      <div class="tabs"><span class="tab">Overview</span><span class="tab">Rent<i>−35%</i></span><span class="tab">Residents<i>8</i></span><span class="tab on">Ask</span></div>
+    </div>
+    <div class="body">
+      <section class="card bad"><div class="lbl">Listing form + 6 check rows</div><p class="hint">…stays here on every tab and pushes the content down…</p></section>
+      <p class="note">1 · unrelated block sits above the chat</p>
+      <section class="card"><div class="thread" style="border:0;margin:0;padding:0">
+        <div class="q">Any power cuts recently?</div><div class="a">No power cuts have been reported in the last 30 days…</div></div></section>
+      <section class="card owner bad"><div class="lbl"><span>Ask the owner</span><span>2</span></div><ul><li><input type="checkbox"><span>How often does the power go out…</span></li></ul></section>
+      <p class="note">2 · checklist sits between the answers and the input</p>
+      <div class="chips bad" style="margin:0"><span class="chip">Is water bad here?</span><span class="chip">Any power cuts recently?</span></div>
+      <div class="composer bad"><input placeholder="Ask anything about this area…"><button class="btn">Ask</button></div>
+      <p class="note">3 · input is at the very bottom, cut off from the conversation</p>
+    </div>
+  </div>
+</div>
+</body></html>

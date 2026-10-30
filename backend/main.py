@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import time
 import uuid
 from pathlib import Path
@@ -22,13 +23,18 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 from checks import ALL_CHECKS  # noqa: E402  (after load_dotenv so env is set)
+from checks import residents  # noqa: E402  (not scored; fills the Residents tab)
 from checks.base import could_not_verify, now_iso  # noqa: E402
-from scoring import AREA_LABELS, level_for, score_report  # noqa: E402
-from summary import build_owner_questions, build_summary  # noqa: E402
+from checks.places import match_area  # noqa: E402
+from scoring import AREA_LABELS, checked_count, level_for, score_report, unverified_labels  # noqa: E402
+from summary import build_owner_items, build_owner_questions, build_summary, generate_summary  # noqa: E402
+import ask  # noqa: E402
 from tinyfish_client import is_live_mode  # noqa: E402
 
-CHECK_TIMEOUT_SECONDS = float(os.getenv("XRAY_CHECK_TIMEOUT", "45"))
+# Live official-page agent runs take ~250 s (see tinyfish_client), so live mode gets a longer budget.
+CHECK_TIMEOUT_SECONDS = float(os.getenv("XRAY_CHECK_TIMEOUT", "300" if is_live_mode() else "45"))
 CACHE_DIR = Path(__file__).resolve().parent / "cache"
+DEMO_REPLAY_STEP_SECONDS = float(os.getenv("XRAY_DEMO_STEP", "0.6"))
 
 app = FastAPI(title="Neighbourhood X-Ray", version="0.1.0")
 app.add_middleware(
@@ -44,7 +50,14 @@ class ScanRequest(BaseModel):
     rent: int | None = Field(default=None, ge=0)
     bhk: int | None = Field(default=None, ge=0, le=20)
     listing_url: str | None = None
+    # Free text from the listing page (description/amenities); used by the water_source check.
+    listing_text: str | None = Field(default=None, max_length=20000)
     source: str = "manual"
+
+
+class AskRequest(BaseModel):
+    scan_id: str = Field(min_length=1, max_length=64)
+    question: str = Field(min_length=2, max_length=500)
 
 
 class Scan:
@@ -75,9 +88,13 @@ async def run_one(check: Any, listing: dict[str, Any]) -> dict[str, Any]:
     try:
         return await asyncio.wait_for(check.run(listing), timeout=CHECK_TIMEOUT_SECONDS)
     except asyncio.TimeoutError:
-        return could_not_verify(check.CHECK_ID, f"Timed out after {CHECK_TIMEOUT_SECONDS:g} seconds.")
+        result = could_not_verify(check.CHECK_ID, f"Timed out after {CHECK_TIMEOUT_SECONDS:g} seconds.")
+        result["degraded"] = True
+        return result
     except Exception as exc:  # any failure must become could_not_verify, never a finding
-        return could_not_verify(check.CHECK_ID, f"Check failed: {exc}")
+        result = could_not_verify(check.CHECK_ID, f"Check failed: {exc}")
+        result["degraded"] = True
+        return result
 
 
 def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -89,22 +106,34 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
             "level": level_for(r["score"]),
             "tag": r["tag"],
             "status": r["status"],
+            # "partial": some official notices couldn't be read; the UI shows a partial-data tag
+            # instead of a confident 100/100.
+            **({"confidence": r["confidence"], "partial_note": r.get("partial_note")} if r.get("confidence") else {}),
         }
         for r in results
     ]
-    checks = [{k: r[k] for k in ("id", "status", "headline", "details", "source_url", "fetched_at")} for r in results]
+    checks = [
+        {k: r[k] for k in ("id", "status", "headline", "details", "source_url", "fetched_at", "findings", "evidence",
+                           "confidence", "partial_note") if k in r}
+        for r in results
+    ]
     score, verdict = score_report(area_scores)
-    good = [
-        {"text": c["headline"], "source_label": None, "source_url": c["source_url"]}
-        for c, a in zip(checks, area_scores)
-        if a["level"] == "good"
-    ]
-    watch_out = [
-        {"text": c["headline"], "source_label": None, "source_url": c["source_url"]}
-        for c, a in zip(checks, area_scores)
-        if a["level"] in {"watch", "risk", "unknown"}
-    ]
-    sourced = [c for c in checks if c["source_url"]]
+    good, watch_out = [], []
+    for c, a in zip(checks, area_scores):
+        item = {"text": c["headline"], "source_label": None, "source_url": c["source_url"]}
+        # Reported cuts/outages are always a watch-out, even when the area score stays high.
+        if c.get("findings") or a["level"] in {"watch", "risk", "unknown"}:
+            watch_out.append(item)
+        else:
+            good.append(item)
+    sources = []
+    for c in checks:
+        links = {e["source_url"] for e in c.get("evidence", []) if (e.get("source_url") or "").startswith("http")}
+        if not links and (c.get("source_url") or "").startswith("http"):
+            links = {c["source_url"]}
+        if links:
+            sources.append({"id": c["id"], "check_id": c["id"], "label": AREA_LABELS.get(c["id"], c["id"]),
+                            "count": len(links)})
     data_mode = "live" if is_live_mode() else "stub"
     return {
         "schema_version": "0.1.0",
@@ -118,16 +147,23 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         "generated_at": now_iso(),
         "duration_seconds": round(time.monotonic() - scan.started, 1),
         "listing": scan.listing,
+        # Parent area used for matching (e.g. "HSR Layout"); the panel header shows it.
+        "area": match_area(scan.listing.get("locality") or ""),
         "score": score,
         "verdict": verdict,
+        # Checks that were read (verified/no_reports) vs not; the UI lists the unverified ones
+        # instead of a score when fewer than scoring.MIN_CHECKED_AREAS were checked.
+        "checked_count": checked_count(area_scores),
+        "unverified_checks": unverified_labels(area_scores),
         "summary": build_summary(checks),
-        "sources_count": len(sourced),
-        "sources": [],
+        "sources_count": sum(s["count"] for s in sources),
+        # One pill per check; the side panel jumps to and opens that check's evidence rows.
+        "sources": sources,
         "area_scores": area_scores,
         "checks": checks,
         "good": good,
         "watch_out": watch_out,
-        "rent_compare": {
+        "rent_compare": next((r["rent_compare"] for r in results if "rent_compare" in r), None) or {
             "status": "could_not_verify",
             "currency": "INR",
             "listing_rent": scan.listing.get("rent"),
@@ -143,17 +179,100 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         },
         "residents": {"status": "could_not_verify", "window": None, "total_mentions": 0, "themes": [], "quotes": []},
         "questions_for_owner": build_owner_questions(checks, area_scores),
+        "owner_questions": build_owner_items(checks, area_scores),
     }
 
 
+def locality_slug(locality: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", (locality or "").lower()).strip("-")[:80] or "unknown"
+
+
+def save_to_cache(report: dict[str, Any]) -> None:
+    """Keep the last successful live scan per locality, plus latest.json, for offline demos."""
+    try:
+        CACHE_DIR.mkdir(exist_ok=True)
+        # The raw listing page text isn't needed for replay and can contain owner/agent names.
+        saved = {**report, "listing": {k: v for k, v in report["listing"].items() if k != "listing_text"}}
+        body = json.dumps(saved, indent=2, ensure_ascii=False)
+        (CACHE_DIR / f"{locality_slug(report['listing'].get('locality'))}.json").write_text(body, encoding="utf-8")
+        (CACHE_DIR / "latest.json").write_text(body, encoding="utf-8")
+    except OSError:
+        pass  # caching is best effort
+
+
+def load_from_cache(locality: str) -> dict[str, Any] | None:
+    for path in (CACHE_DIR / f"{locality_slug(locality)}.json", CACHE_DIR / "latest.json"):
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+    return None
+
+
+async def replay_scan(scan: Scan, cached: dict[str, Any]) -> None:
+    """Replay a saved live scan through the same SSE events (offline demo)."""
+    checks = list(cached.get("checks", []))
+    res = cached.get("residents") or {}
+    if res.get("sources"):  # live scans have a residents row too
+        n_q = len(res.get("quotes", []))
+        checks.append({"id": "residents", "status": res["status"],
+                       "headline": f"{n_q} resident quote{'s' * (n_q != 1)} · {len(res.get('themes', []))} themes"
+                       if res["status"] == "verified" else
+                       "No resident reports found" if res["status"] == "no_reports" else "Could not verify residents"})
+    await scan.emit("started", {"scan_id": scan.id, "total": len(checks), "checks": [c["id"] for c in checks]})
+    for i, c in enumerate(checks, 1):
+        await asyncio.sleep(DEMO_REPLAY_STEP_SECONDS)
+        await scan.emit(
+            "progress",
+            {
+                "scan_id": scan.id,
+                "check_id": c["id"],
+                "status": c["status"],
+                "headline": c["headline"],
+                "completed": i,
+                "total": len(checks),
+            },
+        )
+    report = {
+        **cached,
+        "area": cached.get("area") or match_area(cached.get("listing", {}).get("locality") or ""),
+        "scan_id": scan.id,
+        "data_mode": "cache",
+        "cached_from": {"scan_id": cached.get("scan_id"), "generated_at": cached.get("generated_at")},
+        "disclaimer": f"Replayed from a saved live scan run at {cached.get('generated_at')}; not re-checked now.",
+    }
+    scan.report = report
+    scan.status = "complete"
+    await scan.emit("report", report)
+    await scan.emit("done", {"scan_id": scan.id, "status": scan.status})
+
+
 async def run_scan(scan: Scan) -> None:
-    total = len(ALL_CHECKS)
-    await scan.emit("started", {"scan_id": scan.id, "total": total, "checks": [c.CHECK_ID for c in ALL_CHECKS]})
+    live = is_live_mode()
+    total = len(ALL_CHECKS) + (1 if live else 0)
+    ids = [c.CHECK_ID for c in ALL_CHECKS] + (["residents"] if live else [])
+    await scan.emit("started", {"scan_id": scan.id, "total": total, "checks": ids})
+    resident_box: dict[str, Any] = {}
+    finished = [0]  # one counter for checks + residents, so progress always reaches total
     results: dict[str, dict[str, Any]] = {}
+
+    async def run_residents() -> None:
+        try:
+            res = await asyncio.wait_for(residents.run(scan.listing), CHECK_TIMEOUT_SECONDS)
+        except Exception as exc:  # never fabricated: a failure is could_not_verify
+            res = {"status": "could_not_verify", "window": "12 months", "total_mentions": 0, "themes": [],
+                   "quotes": [], "sources": [], "note": f"Residents search failed: {str(exc)[:120]}"}
+        resident_box["r"] = res
+        n_q = len(res.get("quotes", []))
+        headline = (f"{n_q} resident quote{'s' * (n_q != 1)} · {len(res.get('themes', []))} themes"
+                    if res["status"] == "verified" else
+                    "No resident reports found" if res["status"] == "no_reports" else "Could not verify residents")
+        finished[0] += 1
+        await scan.emit("progress", {"scan_id": scan.id, "check_id": "residents", "status": res["status"],
+                                     "headline": headline, "completed": finished[0], "total": total})
 
     async def run_and_report(check: Any) -> None:
         result = await run_one(check, scan.listing)
         results[check.CHECK_ID] = result
+        finished[0] += 1
         await scan.emit(
             "progress",
             {
@@ -161,35 +280,49 @@ async def run_scan(scan: Scan) -> None:
                 "check_id": result["id"],
                 "status": result["status"],
                 "headline": result["headline"],
-                "completed": len(results),
+                "completed": finished[0],
                 "total": total,
             },
         )
 
-    await asyncio.gather(*(run_and_report(c) for c in ALL_CHECKS))
+    await asyncio.gather(*(run_and_report(c) for c in ALL_CHECKS), *([run_residents()] if live else []))
     ordered = [results[c.CHECK_ID] for c in ALL_CHECKS]
-    scan.report = build_report(scan, ordered)
+    report = build_report(scan, ordered)
+    if "r" in resident_box:
+        report["residents"] = resident_box["r"]
+    report["summary"], report["summary_method"] = await generate_summary(report)
+    scan.report = report
     scan.status = "complete"
-    try:
-        CACHE_DIR.mkdir(exist_ok=True)
-        (CACHE_DIR / f"{scan.id}.json").write_text(json.dumps(scan.report, indent=2), encoding="utf-8")
-    except OSError:
-        pass  # caching is best effort
+    # A scan where a source failed (network drop, search outage) must not replace a good demo cache.
+    degraded = [r["id"] for r in ordered if r.get("degraded")]
+    if resident_box.get("r", {}).get("status") == "could_not_verify":
+        degraded.append("residents")
+    report["degraded_checks"] = degraded
+    if report["data_mode"] == "live" and report["score"] is not None and not degraded:
+        save_to_cache(report)
     await scan.emit("report", scan.report)
     await scan.emit("done", {"scan_id": scan.id, "status": scan.status})
 
 
 @app.get("/health")
 async def health() -> dict[str, Any]:
-    return {"status": "ok", "mode": "live" if is_live_mode() else "stub"}
+    return {"status": "ok", "mode": "live" if is_live_mode() else "stub", "cache_available": (CACHE_DIR / "latest.json").is_file()}
 
 
 @app.post("/scan")
-async def start_scan(req: ScanRequest) -> dict[str, Any]:
+async def start_scan(req: ScanRequest, demo: bool = False) -> dict[str, Any]:
+    """Start a scan. With ?demo=1, replay the saved live scan for this locality (or latest.json)."""
     scan_id = uuid.uuid4().hex[:12]
     scan = Scan(scan_id, req.model_dump())
+    if demo:
+        cached = load_from_cache(req.locality)
+        if cached is None:
+            raise HTTPException(status_code=404, detail="No cached live scan to replay")
+        coro = replay_scan(scan, cached)
+    else:
+        coro = run_scan(scan)
     SCANS[scan_id] = scan
-    scan.task = asyncio.create_task(run_scan(scan))  # keep a reference so it is not GC'd
+    scan.task = asyncio.create_task(coro)  # keep a reference so it is not GC'd
     return {"scan_id": scan_id, "stream_url": f"/scan/{scan_id}/stream", "report_url": f"/scan/{scan_id}"}
 
 
@@ -226,7 +359,13 @@ async def get_scan(scan_id: str) -> dict[str, Any]:
     scan = SCANS.get(scan_id)
     if scan is not None:
         return {"scan_id": scan_id, "status": scan.status, "report": scan.report}
-    cached = CACHE_DIR / f"{scan_id}.json"
-    if scan_id.isalnum() and cached.is_file():
-        return {"scan_id": scan_id, "status": "complete", "report": json.loads(cached.read_text(encoding="utf-8"))}
     raise HTTPException(status_code=404, detail="Unknown scan id")
+
+
+@app.post("/ask")
+async def ask_scan(req: AskRequest) -> dict[str, Any]:
+    """Answer a question from ONE scan's findings only (see ask.py)."""
+    scan = SCANS.get(req.scan_id)
+    if scan is None or scan.report is None:
+        raise HTTPException(status_code=404, detail="Unknown or unfinished scan id")
+    return await ask.answer(scan.report, req.question)
