@@ -32,4 +32,8 @@ l = extractListing({ title: "Rent 2 BHK Flat for Rent in Sector 2 HSR Layout Ban
 assert.strictEqual(l.locality, "Sector 2 HSR Layout");
 assert.strictEqual(l.rent, 45000);
 
+// A long page: the "Water Supply" field past 20,000 characters must still be sent.
+l = extractListing({ title: nbTitle, body: { innerText: "x ".repeat(15000) + "Water Supply Corporation Floors 3" } }, nb);
+assert.ok(/Water Supply Corporation/.test(l.listing_text) && l.listing_text.length <= 20000);
+
 console.log("content.js: all assertions passed");

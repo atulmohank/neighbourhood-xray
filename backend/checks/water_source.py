@@ -22,7 +22,9 @@ CHECK_ID = "water_source"
 # Free text, plus NoBroker's "Water Supply: Corporation | Borewell | Both" field.
 MUNICIPAL_RE = re.compile(
     r"\b(cauvery|kaveri|bwssb|corporation water|municipal water)\b"
-    r"|water supply\W+(corporation|both(\W+corporation\W+and\W+borewell)?)\b",
+    # \W* not \W+: in the live page "Water Supply" and "Corporation" can be adjacent elements
+    # whose innerText runs together ("Water SupplyCorporation").
+    r"|water supply\W*(corporation|both(\W*corporation\W*and\W*borewell)?)\b",
     re.I,
 )
 PRIVATE_RE = re.compile(r"\b(bore\s?well|tankers?)\b", re.I)
@@ -47,15 +49,29 @@ def snippet(text: str, m: re.Match) -> str:
     return "…" + " ".join(text[start:end].split()) + "…"
 
 
-async def listing_text_for(listing: dict[str, Any]) -> str:
-    """The text the extension sent, else the listing page via TinyFish Fetch."""
-    if listing.get("listing_text"):
-        return listing["listing_text"]
-    url = listing.get("listing_url") or ""
-    if not url.startswith("http"):
-        return ""
+def states_source(text: str) -> bool:
+    return bool(MUNICIPAL_RE.search(text) or PRIVATE_RE.search(text))
+
+
+async def fetch_listing_text(url: str) -> str:
     results, _errors = await tf.fetch([url], format="markdown", per_url_timeout_ms=30000)
     return results[0]["text"] if results and isinstance(results[0].get("text"), str) else ""
+
+
+async def listing_text_for(listing: dict[str, Any]) -> str:
+    """The text the extension sent; if that says nothing about water (the live page's
+    visible text can miss the details section), also read the listing via TinyFish Fetch."""
+    sent = listing.get("listing_text") or ""
+    if states_source(sent):
+        return sent
+    url = listing.get("listing_url") or ""
+    if not url.startswith("http"):
+        return sent
+    try:
+        fetched = await fetch_listing_text(url)
+    except tf.TinyFishError:
+        fetched = ""
+    return f"{fetched}\n{sent}".strip() if fetched else sent
 
 
 def check_water_source(listing: dict[str, Any], text: str | None = None) -> dict[str, Any]:
@@ -108,10 +124,6 @@ def check_water_source(listing: dict[str, Any], text: str | None = None) -> dict
 
 async def run(listing: dict[str, Any]) -> dict[str, Any]:
     if is_live_mode():
-        try:
-            text = await listing_text_for(listing)
-        except tf.TinyFishError:
-            text = ""
-        return check_water_source(listing, text)
+        return check_water_source(listing, await listing_text_for(listing))
     await stub_delay()
     raise RuntimeError("Simulated source failure (stub mode demo of could_not_verify)")

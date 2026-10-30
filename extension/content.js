@@ -69,7 +69,11 @@
   function extractListing(doc, href) {
     const url = href || "";
     const title = clean(doc.title);
-    const body = clean(doc.body?.innerText).slice(0, 20000);
+    const full = clean(doc.body?.innerText);
+    let body = full.slice(0, 20000);
+    // Listing details ("Water Supply: Corporation") can sit past the cut-off on long pages: keep them.
+    const ws = full.search(/water\s*supply/i);
+    if (ws >= 20000) body = body.slice(0, 19500) + " … " + full.slice(Math.max(0, ws - 100), ws + 300);
     const source = /magicbricks\.com/i.test(url) ? "magicbricks" : "nobroker";
     const byUrl = source === "nobroker" ? fromNoBrokerUrl(url) : fromMagicBricksUrl(url);
     const byTitle = fromTitle(title);

@@ -338,3 +338,18 @@ def test_cache_drops_listing_text(tmp_path, monkeypatch):
     main.save_to_cache(report)
     saved = json.loads((tmp_path / "latest.json").read_text(encoding="utf-8"))
     assert "listing_text" not in saved["listing"] and saved["listing"]["locality"]
+
+
+def test_water_source_fetches_listing_when_sent_text_is_silent(monkeypatch):
+    from checks import water_source as ws
+
+    async def fake_fetch(url):
+        return "##### Water Supply ##### Corporation #####"
+
+    monkeypatch.setattr(ws, "fetch_listing_text", fake_fetch)
+    listing = {"locality": "HSR Layout", "listing_url": "https://www.nobroker.in/x", "listing_text": "2 BHK, lift, parking"}
+    text = asyncio.run(ws.listing_text_for(listing))
+    r = ws.check_water_source(listing, text)
+    assert r["status"] == "verified" and r["score"] == 100
+    # Live-page innerText can run the label and value together.
+    assert ws.check_water_source(listing, "Water SupplyCorporation")["status"] == "verified"
