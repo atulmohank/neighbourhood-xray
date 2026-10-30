@@ -255,8 +255,9 @@ async def check_rent(listing: dict[str, Any]) -> dict[str, Any]:
         result["degraded"] = True  # no portal page could be read (network/blocking)
         return result
     if outliers:
-        notes.insert(0, f"Dropped {len(outliers)} outlier listings outside 50%-200% of the median "
-                        f"(₹{', ₹'.join(f'{c['rent']:,}' for c in sorted(outliers, key=lambda c: c['rent']))}).")
+        # Built outside the f-string: nested same-type quotes in f-strings need Python 3.12+.
+        dropped = ", ".join(f"₹{c['rent']:,}" for c in sorted(outliers, key=lambda c: c["rent"]))
+        notes.insert(0, f"Dropped {len(outliers)} outlier listings outside 50%-200% of the median ({dropped}).")
 
     rc = build_rent_compare(rent, bhk, comps, urls)
     premium = rc["premium_percent"]

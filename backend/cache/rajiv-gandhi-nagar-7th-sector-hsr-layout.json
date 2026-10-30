@@ -2,9 +2,9 @@
   "schema_version": "0.1.0",
   "data_mode": "live",
   "disclaimer": "",
-  "scan_id": "ff5aa9e4ce91",
-  "generated_at": "2026-10-30T05:57:17Z",
-  "duration_seconds": 55.4,
+  "scan_id": "3ea24f8a8f39",
+  "generated_at": "2026-10-30T06:06:12Z",
+  "duration_seconds": 53.9,
   "listing": {
     "locality": "Rajiv Gandhi Nagar, 7th Sector, HSR Layout",
     "rent": 30000,
@@ -108,7 +108,7 @@
         "News: 0 reports naming HSR Layout in 12 months (6 articles checked)."
       ],
       "source_url": "https://bwssb.karnataka.gov.in/109/Press-Release/en",
-      "fetched_at": "2026-10-30T05:56:52Z",
+      "fetched_at": "2026-10-30T06:05:43Z",
       "evidence": [
         {
           "date": "2026-07-31",
@@ -153,7 +153,7 @@
         "Weighting: last 30 days full, 1-12 months half; city-wide lists count 0.5x (weighted 0 recent + 5 older)."
       ],
       "source_url": "https://www.timesnownews.com/bengaluru/bengaluru-power-cut-today-july-22-bescom-announces-scheduled-outages-in-jayanagar-whitefield-koramangala-and-other-areas-article-155149029",
-      "fetched_at": "2026-10-30T05:57:17Z",
+      "fetched_at": "2026-10-30T06:06:12Z",
       "findings": [
         {
           "kind": "news",
@@ -411,7 +411,7 @@
         "Source: BBMP/KSRSAC flood-vulnerable locations (OpenCity), dataset updated 27 Nov 2025; lists vulnerable spots, not dated incidents."
       ],
       "source_url": "https://data.opencity.in/dataset/flooding-locations-in-bengaluru-urban",
-      "fetched_at": "2026-10-30T05:56:22Z",
+      "fetched_at": "2026-10-30T06:05:18Z",
       "evidence": [
         {
           "date": "2025-11-27",
@@ -452,7 +452,7 @@
         "Dropped 4 outlier listings outside 50%-200% of the median (₹14,000, ₹15,000, ₹18,000, ₹21,000)."
       ],
       "source_url": "https://www.nobroker.in/2bhk-flats-for-rent-in-hsr_layout_bangalore",
-      "fetched_at": "2026-10-30T05:56:28Z",
+      "fetched_at": "2026-10-30T06:05:23Z",
       "evidence": [
         {
           "date": "2026-10-30",
@@ -479,15 +479,15 @@
       "status": "verified",
       "headline": "Listing says: \"Water Supply Corporation\" (municipal supply, per owner)",
       "details": [
-        "Listing text: …nishing Status Semi Facing East Water Supply Corporation No. of Floors 3 Bathroom 2…",
+        "Listing text: …nnerghatta Road Overview Furnishing Status Semi Facing East Water Supply Corporation No. of Floors 3 Bathroom 2 Pet Allowed Yes Non-Veg Allowed…",
         "Area-level context only: 'HSR Sector 1st to 7th sector' is listed under BWSSB Cauvery Stage 4 Ph 1 (OpenCity dataset updated 27 Nov 2025). This does not show that this building is connected or that supply is adequate."
       ],
       "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-rajiv-gandhi-nagar-7th-sector-hsr-layout-bangalore-for-rs-30000/8aa9a839a056cd0c01a057a8088e2a7a/detail",
-      "fetched_at": "2026-10-30T05:56:27Z",
+      "fetched_at": "2026-10-30T06:05:18Z",
       "evidence": [
         {
           "date": null,
-          "title": "…nishing Status Semi Facing East Water Supply Corporation No. of Floors 3 Bathroom 2…",
+          "title": "…nnerghatta Road Overview Furnishing Status Semi Facing East Water Supply Corporation No. of Floors 3 Bathroom 2 Pet Allowed Yes Non-Veg Allowed…",
           "label": "Listing (Nobroker)",
           "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-rajiv-gandhi-nagar-7th-sector-hsr-layout-bangalore-for-rs-30000/8aa9a839a056cd0c01a057a8088e2a7a/detail"
         },
@@ -571,7 +571,7 @@
       "monthly_saving": 8000,
       "source_url": "https://www.nobroker.in/property/2-bhk-apartment-for-rent-in-hsr-layout-sector-7-bangalore-for-rs-22000/8aa9aa959f75a584019f7609d2602733/detail"
     },
-    "fetched_at": "2026-10-30T05:56:28Z"
+    "fetched_at": "2026-10-30T06:05:23Z"
   },
   "residents": {
     "status": "verified",

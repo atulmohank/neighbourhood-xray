@@ -39,3 +39,6 @@ desktop.ini
 
 # TinyFish smoke-test raw output (may contain live-view URLs)
 backend/scripts/smoke_output*.txt
+
+# Local AI-tool output folder
+Claude outputs/

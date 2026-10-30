@@ -33,11 +33,11 @@ design/xray_ui_design/       UI design reference (build from final/)
 
 ## Backend setup (Windows PowerShell)
 
-Requires Python 3.11+.
+Python 3.12 or newer (tested on 3.14).
 
 ```powershell
 cd backend
-py -3.11 -m venv .venv          # or: python -m venv .venv
+py -3.14 -m venv .venv          # or: py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1    # if blocked: Set-ExecutionPolicy -Scope Process Bypass
 pip install -r requirements.txt
 Copy-Item .env.example .env     # optional; stub mode needs no keys
