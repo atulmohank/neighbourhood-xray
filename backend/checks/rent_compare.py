@@ -252,6 +252,7 @@ async def check_rent(listing: dict[str, Any]) -> dict[str, Any]:
         result = could_not_verify(CHECK_ID, reason)
         result["details"] += notes
         result["source_url"] = urls["NoBroker"]
+        result["degraded"] = True  # no portal page could be read (network/blocking)
         return result
     if outliers:
         notes.insert(0, f"Dropped {len(outliers)} outlier listings outside 50%-200% of the median "

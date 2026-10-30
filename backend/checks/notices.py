@@ -474,9 +474,14 @@ async def run_notices_check(
                 + "; ".join(f"{n['title']} ({fmt_day(n['date'])})" for n in unreadable)
             )
 
-    if isinstance(news_res, BaseException):
+    news_failed = isinstance(news_res, BaseException)
+    if news_failed:
         why = "timed out" if isinstance(news_res, asyncio.TimeoutError) else str(news_res)[:160]
-        lines.append(f"News search could not be completed ({why}).")
+        # Search is down: fall back to reports that passed every filter on earlier scans.
+        remembered = merge_news_memory(source, place, [], year_since)
+        events += remembered
+        lines.append(f"News search could not be completed now ({why}); "
+                     f"using {len(remembered)} report{'s' * (len(remembered) != 1)} verified on earlier scans.")
     else:
         news, checked = news_res
         events += news
@@ -518,7 +523,7 @@ async def run_notices_check(
             tag=f"None · page updated {fmt_day(latest)}" if latest else "None reported",
         )
         result["evidence"] = evidence
-        return mark_partial(result, unreadable)
+        return mark_partial(result, unreadable, news_failed)
 
     def describe(evs: list[dict[str, Any]]) -> str:
         n_off = sum(e["kind"] == "official" for e in evs)
@@ -553,13 +558,18 @@ async def run_notices_check(
         "source_url": events[0]["source_url"],
         "fetched_at": now_iso(),
     }
-    return mark_partial(result, unreadable)
+    return mark_partial(result, unreadable, news_failed)
 
 
-def mark_partial(result: dict[str, Any], unreadable: list[dict[str, Any]]) -> dict[str, Any]:
-    """Flag lower confidence when official notices in the window couldn't be read."""
+def mark_partial(result: dict[str, Any], unreadable: list[dict[str, Any]], news_failed: bool = False) -> dict[str, Any]:
+    """Flag lower confidence when official notices couldn't be read or the news search failed."""
+    notes = []
     if unreadable:
+        notes.append(f"{len(unreadable)} official notice{'s' * (len(unreadable) != 1)} couldn't be fully read")
+    if news_failed:
+        notes.append("the news search failed during this scan")
+        result["degraded"] = True  # never saved as a demo cache
+    if notes:
         result["confidence"] = "partial"
-        result["partial_note"] = (f"{len(unreadable)} official notice{'s' * (len(unreadable) != 1)} "
-                                  "couldn't be fully read, so this may miss cuts")
+        result["partial_note"] = " and ".join(notes).capitalize() + ", so this may miss cuts"
     return result

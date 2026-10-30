@@ -128,6 +128,21 @@ async def generate_summary(report: dict[str, Any]) -> tuple[str, str]:
     return text, "llm"
 
 
+def build_owner_items(checks: list[dict[str, Any]], area_scores: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """Owner questions with where each came from ("From: power check")."""
+    by_id = {a["id"]: a for a in area_scores}
+    items = []
+    for check in checks:
+        area = by_id.get(check["id"], {})
+        # Ask when the check couldn't verify, scored watch/risk, or found reported cuts/spots.
+        if check["status"] == "could_not_verify" or area.get("level") in {"watch", "risk"} or check.get("findings"):
+            q = _TOPIC_QUESTIONS.get(check["id"])
+            if q:
+                label = (area.get("label") or check["id"].replace("_", " ")).lower()
+                items.append({"text": q, "from": f"{label} check", "check_id": check["id"]})
+    return items
+
+
 def build_owner_questions(checks: list[dict[str, Any]], area_scores: list[dict[str, Any]]) -> list[str]:
     """Ask about areas that scored below 'good' or could not be verified."""
     by_id = {a["id"]: a for a in area_scores}

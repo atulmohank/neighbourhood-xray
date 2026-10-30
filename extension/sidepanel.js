@@ -65,12 +65,18 @@ function openCheck(id) {
 }
 
 // ---------- tabs ----------
-document.querySelectorAll(".tab").forEach((btn) =>
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b === btn));
-    document.querySelectorAll(".view").forEach((v) => v.classList.toggle("hidden", v.id !== `view-${btn.dataset.tab}`));
-  })
-);
+function showTab(name, scroll = true) {
+  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll(".view").forEach((v) => v.classList.toggle("hidden", v.id !== `view-${name}`));
+  if (!scroll) return;
+  // Start the tab's content right under the sticky header + tab bar (the banner counts as content).
+  const banner = $("data-banner");
+  const target = banner.classList.contains("hidden") ? $(`view-${name}`) : banner;
+  const top = target.getBoundingClientRect().top + window.scrollY - $("sticky-top").offsetHeight - 8;
+  window.scrollTo({ top: Math.max(0, top) });
+}
+
+document.querySelectorAll(".tab").forEach((btn) => btn.addEventListener("click", () => showTab(btn.dataset.tab)));
 
 // ---------- rendering ----------
 function render(report) {
@@ -92,7 +98,9 @@ function render(report) {
   banner.classList.toggle("hidden", mode === "live");
 
   const l = report.listing || {};
-  $("listing-sub").textContent = [l.locality, l.bhk ? `${l.bhk} BHK` : null].filter(Boolean).join(" · ") || "No listing";
+  // Header: the parent area (what the checks matched on); the compact line keeps the full name.
+  $("listing-sub").textContent = [report.area || l.locality, l.bhk ? `${l.bhk} BHK` : null].filter(Boolean).join(" · ") || "No listing";
+  currentArea = report.area || null;
 
   const rc = report.rent_compare || {};
   $("rent-badge").textContent = rc.premium_percent != null ? `${rc.premium_percent > 0 ? "+" : ""}${Math.round(rc.premium_percent)}%` : "";
@@ -349,88 +357,182 @@ function renderResidents(r) {
   );
 }
 
-const ASK_CHIPS = ["Is water bad here?", "Any power cuts recently?", "Is the rent fair?", "Does it flood?", "Safe at night?"];
-let askState = { scanId: null, log: [], extraOwnerQs: [] };
+const ASK_CHIPS = ["Is water bad here?", "Any power cuts recently?", "Is the rent fair?", "Does it flood?"];
+let askState = { scanId: null, log: [], extraOwnerQs: [], checked: new Set() };
+const STATE_TAG = { verified: ["Verified", "ok"], no_reports: ["No reports", "nr"], could_not_verify: ["Could not verify", "cnv"], stub: ["Demo", "nr"] };
+
+function ownerItems(r) {
+  const base = (r.owner_questions || []).length
+    ? r.owner_questions.map((o) => ({ text: o.text, from: `From: ${o.from}` }))
+    : (r.questions_for_owner || []).map((q) => ({ text: q, from: "From: this scan" }));
+  const seen = new Set(base.map((o) => o.text));
+  return [...base, ...askState.extraOwnerQs.filter((q) => !seen.has(q)).map((q) => ({ text: q, from: "From your question", isNew: true }))];
+}
+
+function answerBubble(m) {
+  if (m.role === "user") return h("div", { class: "ask-q-bubble" }, m.text);
+  const tags = (m.states || []).map((s) => {
+    const [txt, cls] = STATE_TAG[s.status] || [s.status, "nr"];
+    return h("span", { class: `ask-tag ${cls}`, title: s.label }, txt);
+  });
+  const links = (m.sources || []).map((s) => sourceLink(s.url, s.label));
+  return h("div", { class: `ask-a${m.inScan ? "" : " miss"}${m.pending ? " pending" : ""}` },
+    m.inScan || m.pending ? h("div", {}, m.text) : h("div", {}, h("b", {}, m.text.split(".")[0] + "."), m.text.split(".").slice(1).join(".")),
+    tags.length || links.length ? h("div", { class: "ask-src" }, tags, links) : null,
+    m.addedOwner ? h("div", { class: "ask-added" }, "+ Added to \u201cAsk the owner\u201d") : null);
+}
 
 function renderAsk(r) {
   const v = $("view-ask");
   v.replaceChildren();
   // A real scan (live/stub/cache) has a backend scan id; the bundled example doesn't.
   const scanId = r.data_mode === "example" ? null : r.scan_id;
-  if (askState.scanId !== scanId) askState = { scanId, log: [], extraOwnerQs: [] };
-  const ownerQs = [...(r.questions_for_owner || []), ...askState.extraOwnerQs];
+  if (askState.scanId !== scanId) askState = { scanId, log: [], extraOwnerQs: [], checked: new Set() };
+  const nChecks = (r.checks || []).length + (r.residents && r.residents.sources ? 1 : 0);
 
-  const chat = h("section", { class: "card ask-chat" },
-    askState.log.length
-      ? askState.log.map((m) =>
-          m.role === "user"
-            ? h("div", { class: "bubble user" }, m.text)
-            : h("div", { class: `bubble bot${m.inScan ? "" : " miss"}` },
-                h("div", {}, m.text),
-                m.sources?.length ? h("div", { class: "bubble-src" }, m.sources.map((s) => sourceLink(s.url, s.label))) : null,
-                !m.inScan && m.ownerQuestion ? h("div", { class: "muted small" }, "Ask the owner: ", m.ownerQuestion) : null))
-      : h("p", { class: "muted" }, scanId ? "Ask about this scan. Answers use only its findings." : "Run or replay a scan to ask questions about it.")
-  );
-
-  const input = h("input", { type: "text", id: "ask-input", placeholder: "Ask anything about this area…", maxlength: "500", autocomplete: "off" });
-  const send = h("button", { class: "btn ask-send", id: "ask-send" }, "Ask");
+  const input = h("input", { type: "text", id: "ask-input", placeholder: "e.g. Is there water trouble in summer?", maxlength: "500", autocomplete: "off" });
+  const send = h("button", { class: "ask-send", id: "ask-send", type: "button" }, "Ask");
   const submit = () => askQuestion(r, input.value);
   send.addEventListener("click", submit);
   input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
   if (!scanId) { input.disabled = true; send.disabled = true; }
 
+  const thread = askState.log.length ? h("div", { class: "ask-thread", id: "ask-thread" }, askState.log.map(answerBubble)) : null;
   v.append(
-    chat,
-    h("section", { class: "card" },
-      h("div", { class: "label-row" }, h("span", { class: "label" }, "Ask the owner"), h("span", { class: "label mono" }, ownerQs.length)),
-      ownerQs.length ? ownerQs.map((q) => h("label", { class: "ask-q" }, h("input", { type: "checkbox" }), h("span", {}, q))) : h("p", { class: "muted" }, "No questions yet.")
-    ),
-    h("div", { class: "chips" }, ASK_CHIPS.map((c) => {
-      const b = h("button", { class: "chip-btn" }, c);
-      b.disabled = !scanId;
-      b.addEventListener("click", () => askQuestion(r, c));
-      return b;
-    })),
-    h("div", { class: "ask-row" }, input, send)
+    h("section", { class: "card ask-card" },
+      h("div", { class: "label-row" }, h("span", { class: "label" }, "Ask about this area")),
+      h("p", { class: "ask-hint" }, scanId
+        ? `Answers come only from this scan's ${nChecks} checks, with sources.`
+        : "Run or replay a scan to ask about it."),
+      h("div", { class: "ask-composer" }, input, send),
+      h("div", { class: "chips" }, ASK_CHIPS.map((c) => {
+        const b = h("button", { class: "chip-btn", type: "button" }, c);
+        b.disabled = !scanId;
+        b.addEventListener("click", () => askQuestion(r, c));
+        return b;
+      })),
+      thread),
+    h("section", { class: "card owner-card" },
+      (() => {
+        const items = ownerItems(r);
+        return [
+          h("div", { class: "label-row" }, h("span", { class: "label" }, "Ask the owner · checklist"), h("span", { class: "label mono" }, items.length)),
+          items.length
+            ? h("ul", { class: "owner-list" }, items.map((o) => {
+                const box = h("input", { type: "checkbox" });
+                box.checked = askState.checked.has(o.text);
+                box.addEventListener("change", () => (box.checked ? askState.checked.add(o.text) : askState.checked.delete(o.text)));
+                return h("li", {}, box, h("span", {}, o.text, o.isNew ? h("span", { class: "owner-new" }, "NEW") : null, h("small", {}, o.from)));
+              }))
+            : h("p", { class: "muted" }, "No questions yet."),
+        ];
+      })()
+    )
   );
+}
+
+function scrollToNewestAnswer() {
+  const t = $("ask-thread");
+  const last = t?.lastElementChild;
+  if (!last) return;
+  const bottom = last.getBoundingClientRect().bottom;
+  if (bottom > window.innerHeight - 12 || last.getBoundingClientRect().top < $("sticky-top").offsetHeight) {
+    last.scrollIntoView({ block: "end", behavior: "smooth" });
+  }
 }
 
 async function askQuestion(r, question) {
   const q = (question || "").trim();
   if (q.length < 2 || !askState.scanId) return;
-  askState.log.push({ role: "user", text: q }, { role: "bot", text: "Checking this scan…", inScan: true });
+  const pending = { role: "bot", text: "Checking this scan…", inScan: true, pending: true };
+  askState.log.push({ role: "user", text: q }, pending);
   renderAsk(r);
-  const pending = askState.log[askState.log.length - 1];
+  scrollToNewestAnswer();
   try {
     const res = await fetch(`${BACKEND}/ask`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scan_id: askState.scanId, question: q }) });
     if (!res.ok) throw new Error(res.status === 404 ? "this scan is no longer on the backend — run or replay it again" : `HTTP ${res.status}`);
     const a = await res.json();
-    Object.assign(pending, { text: a.answer, inScan: a.in_scan, sources: a.sources, ownerQuestion: a.owner_question });
-    if (!a.in_scan && a.owner_question && !askState.extraOwnerQs.includes(a.owner_question)) askState.extraOwnerQs.push(a.owner_question);
+    Object.assign(pending, { text: a.answer, inScan: a.in_scan, sources: a.sources, states: a.check_states || [], pending: false });
+    // Only real "not in this scan" answers add a question; errors don't.
+    if (!a.in_scan && a.method !== "error" && a.owner_question && !askState.extraOwnerQs.includes(a.owner_question)) {
+      askState.extraOwnerQs.push(a.owner_question);
+      pending.addedOwner = true;
+    }
   } catch (err) {
-    Object.assign(pending, { text: `Couldn't ask: ${err.message}.`, inScan: false });
+    Object.assign(pending, { text: `Couldn't ask: ${err.message}.`, inScan: false, pending: false });
   }
   renderAsk(r);
+  scrollToNewestAnswer();
   $("ask-input")?.focus();
 }
 
 // ---------- listing extraction ----------
+const LISTING_URL_RE = /^https:\/\/www\.(nobroker\.in|magicbricks\.com)\//;
+
+async function readListing(tab) {
+  try {
+    return await chrome.tabs.sendMessage(tab.id, { type: "xray:extractListing" });
+  } catch (err) {
+    // Tabs opened before the extension (re)loaded have no content script: inject it once, retry once.
+    if (!/receiving end|could not establish connection/i.test(String(err?.message || err))) throw err;
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content.js"] });
+    return await chrome.tabs.sendMessage(tab.id, { type: "xray:extractListing" });
+  }
+}
+
 async function loadListingFromTab() {
   const state = $("extract-state");
+  if (source) return; // never change the form while a scan is running
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !/^https:\/\/www\.(nobroker\.in|magicbricks\.com)\//.test(tab.url || "")) throw new Error("not a listing tab");
-    const res = await chrome.tabs.sendMessage(tab.id, { type: "xray:extractListing" });
+    if (!tab || !LISTING_URL_RE.test(tab.url || "")) throw new Error("not a listing tab");
+    const res = await readListing(tab);
     if (!res?.ok) throw new Error(res?.error || "no response");
     const l = res.listing;
+    const changed = window.__listing?.url && window.__listing.url !== l.listing_url;
     if (l.locality) $("in-locality").value = l.locality;
     if (l.rent) $("in-rent").value = l.rent;
     if (l.bhk) $("in-bhk").value = l.bhk;
     window.__listing = { url: l.listing_url, text: l.listing_text, source: l.source };
     state.textContent = l.locality ? `From ${l.source === "magicbricks" ? "MagicBricks" : "NoBroker"} — please check` : "Locality not found — type it";
+    // A different listing than the report on screen: open the form so it can be scanned.
+    if (changed && lastScan && lastScan.url !== l.listing_url) expandForm();
   } catch {
     state.textContent = "Enter the locality manually";
   }
+}
+
+if (globalThis.chrome?.tabs?.onActivated) {
+  chrome.tabs.onActivated.addListener(() => loadListingFromTab());
+  chrome.tabs.onUpdated.addListener((_id, info, tab) => {
+    if (info.status === "complete" && tab.active) loadListingFromTab();
+  });
+}
+
+// ---------- compact listing line ----------
+let lastScan = null;
+let currentArea = null;
+
+// "Rajiv Gandhi Nagar, 7th Sector, HSR Layout" + area "HSR Layout" -> "Rajiv Gandhi Nagar, 7th Sector"
+function subLocality(locality, area) {
+  if (!locality || !area) return locality;
+  const parts = locality.split(",").map((p) => p.trim()).filter(Boolean);
+  const rest = parts.filter((p) => p.toLowerCase() !== area.toLowerCase());
+  return rest.length && rest.length < parts.length ? rest.join(", ") : locality;
+}
+
+function collapseForm(summary) {
+  lastScan = summary;
+  const parts = [subLocality(summary.locality, currentArea), summary.rent ? inr(summary.rent) : null, summary.bhk ? `${summary.bhk} BHK` : null,
+    summary.total ? `${summary.done}/${summary.total} checked` : null].filter(Boolean);
+  $("compact-text").textContent = parts.join(" · ");
+  $("compact-listing").classList.remove("hidden");
+  document.querySelector(".scan-card").classList.add("hidden");
+}
+
+function expandForm() {
+  $("compact-listing").classList.add("hidden");
+  document.querySelector(".scan-card").classList.remove("hidden");
 }
 
 // ---------- scanning ----------
@@ -500,6 +602,7 @@ async function startScan(demo = false) {
   const body = { locality, rent: num("in-rent"), bhk: num("in-bhk"), listing_url: window.__listing?.url || null, listing_text: window.__listing?.text || null, source: window.__listing?.source || "manual" };
 
   if (source) source.close();
+  expandForm();
   clearReport(demo, body);
   setBusy(true);
   $("progress-list").replaceChildren();
@@ -531,17 +634,21 @@ async function startScan(demo = false) {
   });
   source.addEventListener("progress", (e) => {
     const d = JSON.parse(e.data);
+    done = d.completed;
     setProgress(d.completed, d.total, d.completed < d.total ? "Running checks…" : "Building report…");
     const li = $(`pg-${d.check_id}`);
     if (li) li.replaceChildren(h("span", { class: `dot st-${d.status}` }), h("span", {}, d.headline), statusChip(d.status));
     if (li) li.className = "";
   });
   source.addEventListener("report", (e) => { gotReport = true; render(JSON.parse(e.data)); });
+  let done = 0;
   source.addEventListener("done", () => {
     source.close();
     source = null;
     setBusy(false);
     setProgress(total, total, demo ? "Cached scan replayed" : "Scan complete");
+    // Fold the form + progress rows into one line so every tab starts near the top.
+    if (gotReport) collapseForm({ ...body, url: body.listing_url, done: done || total, total });
   });
   source.onerror = () => {
     if (!source) return;
@@ -568,6 +675,7 @@ function showEmpty() {
 
 async function showExample() {
   const report = await (await fetch(EXAMPLE_URL)).json();
+  expandForm();
   render(report);
 }
 
@@ -577,5 +685,10 @@ $("btn-example").addEventListener("click", showExample);
 
 // Open on an empty state: no report until the user scans (or asks for the example).
 showEmpty();
+$("btn-edit").addEventListener("click", () => { expandForm(); window.scrollTo({ top: 0 }); });
+$("btn-read-page").addEventListener("click", () => {
+  if (globalThis.chrome?.tabs) loadListingFromTab();
+  else $("extract-state").textContent = "Open a NoBroker/MagicBricks listing first";
+});
 if (globalThis.chrome?.tabs) loadListingFromTab();
 else $("extract-state").textContent = "Enter the locality manually";

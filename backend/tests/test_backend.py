@@ -471,3 +471,82 @@ def test_residents_no_reports_when_nothing_relevant(monkeypatch, tmp_path):
         "title": "Cats", "date": "2026-05-01", "text": "My cat likes Koramangala cafes a lot honestly."}})
     r = asyncio.run(residents.scan_residents({"locality": "HSR Layout"}))
     assert r["status"] == "no_reports" and r["quotes"] == [] and r["themes"] == []
+
+
+def test_ask_wording_states_and_owner_origins():
+    import ask
+    import summary
+
+    assert ask.soften_overclaims("No power cuts have occurred in the last 30 days.") == \
+        "No power cuts were reported in this scan in the last 30 days."
+    assert ask.soften_overclaims("There have been no water cuts.").startswith("This scan found no reports of")
+    report = {"checks": [{"id": "water_cuts", "status": "no_reports"}, {"id": "power_cuts", "status": "verified"}]}
+    used = [{"label": "Power", "url": "https://x", "check_id": "power_cuts"}]
+    assert ask.check_states_for(report, used, "anything") == [{"check_id": "power_cuts", "label": "Power", "status": "verified"}]
+    assert ask.check_states_for(report, [], "Is water bad here?")[0]["status"] == "no_reports"  # topic fallback
+    items = summary.build_owner_items(
+        [{"id": "power_cuts", "status": "verified"}],
+        [{"id": "power_cuts", "label": "Power", "level": "watch"}])
+    assert items == [{"text": summary._TOPIC_QUESTIONS["power_cuts"], "from": "power check", "check_id": "power_cuts"}]
+
+
+def test_failed_news_uses_memory_and_degraded_scans_are_not_cached(monkeypatch, tmp_path):
+    from datetime import date, datetime, timezone
+
+    import tinyfish_client as tf
+    from checks import notices as nt
+
+    monkeypatch.setattr(nt, "NEWS_MEMORY_DIR", tmp_path / "mem")
+    today = datetime.now(timezone.utc).date()
+    nt.merge_news_memory(nt.SOURCES["bescom"], "Banashankari", [{
+        "kind": "news", "scope": "citywide", "title": "Power cut list", "date": today.isoformat(),
+        "weight": 0.5, "publisher": "X", "source_url": "https://n/x"}], date(2000, 1, 1))
+
+    async def official(source_id, today):
+        return {"method": "page HTML", "latest_notice_date": "2026-07-01", "notices": [], "url": "https://o"}
+
+    async def down(*a, **k):
+        raise tf.TinyFishError("getaddrinfo failed")
+
+    monkeypatch.setattr(nt, "official_notices", official)
+    monkeypatch.setattr(nt, "news_events", down)
+    import scoring
+
+    r = asyncio.run(nt.run_notices_check("power_cuts", "bescom", {"locality": "Banashankari"},
+                                         scoring.power_cuts_deduction, scoring.area_score, "power cut"))
+    assert r["status"] == "verified" and r["degraded"] is True and r["confidence"] == "partial"
+    assert any("verified on earlier scans" in d for d in r["details"])
+
+
+def test_live_scan_with_a_failed_check_is_not_cached(monkeypatch, tmp_path):
+    class Broken:
+        CHECK_ID = "rent_compare"
+
+        @staticmethod
+        async def run(listing):
+            raise OSError("getaddrinfo failed")
+
+    class Fine:
+        def __init__(self, cid):
+            self.CHECK_ID = cid
+
+        async def run(self, listing):
+            return {"id": self.CHECK_ID, "status": "no_reports", "score": 100, "tag": "None", "headline": "ok",
+                    "details": [], "source_url": "https://x", "fetched_at": "t"}
+
+    async def no_residents(listing):
+        return {"status": "no_reports", "themes": [], "quotes": [], "sources": [{"site": "Reddit", "status": "ok"}]}
+
+    monkeypatch.setattr(main, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(main, "is_live_mode", lambda: True)
+    monkeypatch.setattr(main, "ALL_CHECKS", [Fine("water_cuts"), Fine("power_cuts"), Broken])
+    monkeypatch.setattr(main.residents, "run", no_residents)
+
+    async def go():
+        scan = main.Scan("t1", {"locality": "Banashankari", "rent": 26000, "bhk": 2})
+        await main.run_scan(scan)
+        return scan.report
+
+    report = asyncio.run(go())
+    assert report["degraded_checks"] == ["rent_compare"]
+    assert not (tmp_path / "latest.json").exists()

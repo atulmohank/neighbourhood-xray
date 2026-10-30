@@ -96,6 +96,10 @@
     return;
   }
 
+  // The side panel may inject this file into tabs opened before the extension (re)loaded.
+  if (window.__xrayContentLoaded) return;
+  window.__xrayContentLoaded = true;
+
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg && msg.type === "xray:extractListing") {
       try {

@@ -25,8 +25,9 @@ load_dotenv()
 from checks import ALL_CHECKS  # noqa: E402  (after load_dotenv so env is set)
 from checks import residents  # noqa: E402  (not scored; fills the Residents tab)
 from checks.base import could_not_verify, now_iso  # noqa: E402
+from checks.places import match_area  # noqa: E402
 from scoring import AREA_LABELS, checked_count, level_for, score_report, unverified_labels  # noqa: E402
-from summary import build_owner_questions, build_summary, generate_summary  # noqa: E402
+from summary import build_owner_items, build_owner_questions, build_summary, generate_summary  # noqa: E402
 import ask  # noqa: E402
 from tinyfish_client import is_live_mode  # noqa: E402
 
@@ -87,9 +88,13 @@ async def run_one(check: Any, listing: dict[str, Any]) -> dict[str, Any]:
     try:
         return await asyncio.wait_for(check.run(listing), timeout=CHECK_TIMEOUT_SECONDS)
     except asyncio.TimeoutError:
-        return could_not_verify(check.CHECK_ID, f"Timed out after {CHECK_TIMEOUT_SECONDS:g} seconds.")
+        result = could_not_verify(check.CHECK_ID, f"Timed out after {CHECK_TIMEOUT_SECONDS:g} seconds.")
+        result["degraded"] = True
+        return result
     except Exception as exc:  # any failure must become could_not_verify, never a finding
-        return could_not_verify(check.CHECK_ID, f"Check failed: {exc}")
+        result = could_not_verify(check.CHECK_ID, f"Check failed: {exc}")
+        result["degraded"] = True
+        return result
 
 
 def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -142,6 +147,8 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         "generated_at": now_iso(),
         "duration_seconds": round(time.monotonic() - scan.started, 1),
         "listing": scan.listing,
+        # Parent area used for matching (e.g. "HSR Layout"); the panel header shows it.
+        "area": match_area(scan.listing.get("locality") or ""),
         "score": score,
         "verdict": verdict,
         # Checks that were read (verified/no_reports) vs not; the UI lists the unverified ones
@@ -172,6 +179,7 @@ def build_report(scan: Scan, results: list[dict[str, Any]]) -> dict[str, Any]:
         },
         "residents": {"status": "could_not_verify", "window": None, "total_mentions": 0, "themes": [], "quotes": []},
         "questions_for_owner": build_owner_questions(checks, area_scores),
+        "owner_questions": build_owner_items(checks, area_scores),
     }
 
 
@@ -201,7 +209,14 @@ def load_from_cache(locality: str) -> dict[str, Any] | None:
 
 async def replay_scan(scan: Scan, cached: dict[str, Any]) -> None:
     """Replay a saved live scan through the same SSE events (offline demo)."""
-    checks = cached.get("checks", [])
+    checks = list(cached.get("checks", []))
+    res = cached.get("residents") or {}
+    if res.get("sources"):  # live scans have a residents row too
+        n_q = len(res.get("quotes", []))
+        checks.append({"id": "residents", "status": res["status"],
+                       "headline": f"{n_q} resident quote{'s' * (n_q != 1)} · {len(res.get('themes', []))} themes"
+                       if res["status"] == "verified" else
+                       "No resident reports found" if res["status"] == "no_reports" else "Could not verify residents"})
     await scan.emit("started", {"scan_id": scan.id, "total": len(checks), "checks": [c["id"] for c in checks]})
     for i, c in enumerate(checks, 1):
         await asyncio.sleep(DEMO_REPLAY_STEP_SECONDS)
@@ -218,6 +233,7 @@ async def replay_scan(scan: Scan, cached: dict[str, Any]) -> None:
         )
     report = {
         **cached,
+        "area": cached.get("area") or match_area(cached.get("listing", {}).get("locality") or ""),
         "scan_id": scan.id,
         "data_mode": "cache",
         "cached_from": {"scan_id": cached.get("scan_id"), "generated_at": cached.get("generated_at")},
@@ -277,7 +293,12 @@ async def run_scan(scan: Scan) -> None:
     report["summary"], report["summary_method"] = await generate_summary(report)
     scan.report = report
     scan.status = "complete"
-    if report["data_mode"] == "live" and report["score"] is not None:
+    # A scan where a source failed (network drop, search outage) must not replace a good demo cache.
+    degraded = [r["id"] for r in ordered if r.get("degraded")]
+    if resident_box.get("r", {}).get("status") == "could_not_verify":
+        degraded.append("residents")
+    report["degraded_checks"] = degraded
+    if report["data_mode"] == "live" and report["score"] is not None and not degraded:
         save_to_cache(report)
     await scan.emit("report", scan.report)
     await scan.emit("done", {"scan_id": scan.id, "status": scan.status})

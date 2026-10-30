@@ -15,6 +15,7 @@ from typing import Any
 
 import httpx
 
+from scoring import AREA_LABELS
 from summary import GROQ_CHAT_URL, llm_enabled, numbers_grounded
 
 ASK_TIMEOUT_SECONDS = 10
@@ -34,8 +35,47 @@ SYSTEM_PROMPT = (
     "('news report', 'official notice', 'dataset', 'listing') exactly as the scan labels it; never turn news "
     "reports into official notices. Never claim official notices show nothing when the scan says notices "
     "couldn't be fully read. Checks with status could_not_verify were not verified; no_reports means the "
-    "source was read and had nothing for this area."
+    "source was read and had nothing for this area. Never say something 'did not occur', 'has not happened' "
+    "or 'there have been no ...': say it was 'not reported in this scan' or 'none reported in this scan'."
 )
+
+# Topic -> check, used for the answer's state tag when the model cites no source.
+TOPIC_CHECKS = [
+    (r"water supply|water cut|tanker|no water|water bad|water", "water_cuts"),
+    (r"power|electric|outage|backup", "power_cuts"),
+    (r"flood|rain|waterlog|monsoon|drain", "flooding"),
+    (r"rent|price|deposit|negotia|fair|cheap|expensive", "rent_compare"),
+    (r"borewell|cauvery|corporation|source of water|water source", "water_source"),
+]
+
+# "No power cuts have occurred" overstates what a scan can know; say what was (not) reported.
+_OVERCLAIMS = [
+    (re.compile(r"\b(no|zero) ([\w-]+(?: [\w-]+){0,3}) (?:have|has|had) (?:occurred|happened|taken place)", re.I),
+     r"\1 \2 were reported in this scan"),
+    (re.compile(r"\b(no|zero) ([\w-]+(?: [\w-]+){0,3}) (?:have|has) been (?:reported|recorded|seen)", re.I),
+     r"\1 \2 were reported in this scan"),
+    (re.compile(r"\bthere (?:have|has) been no\b", re.I), "this scan found no reports of"),
+    (re.compile(r"\b(?:did|has|have) not (?:occur|occurred|happen|happened)\b", re.I), "was not reported in this scan"),
+]
+
+
+def soften_overclaims(text: str) -> str:
+    for rx, repl in _OVERCLAIMS:
+        text = rx.sub(repl, text)
+    # Re-capitalise sentence starts the replacements may have lowered.
+    return re.sub(r"(^|[.!?]\s+)([a-z])", lambda m: m.group(1) + m.group(2).upper(), text)
+
+
+def check_states_for(report: dict[str, Any], used: list[dict[str, str]], question: str) -> list[dict[str, str]]:
+    """State tag(s) for an answer: the checks behind its cited sources, else the question's topic."""
+    by_id = {c["id"]: c for c in report.get("checks", [])}
+    ids = [s["check_id"] for s in used if s.get("check_id") in by_id]
+    if not ids:
+        ids = [cid for rx, cid in TOPIC_CHECKS if re.search(rx, question, re.I) and cid in by_id][:1]
+    out = []
+    for cid in dict.fromkeys(ids):
+        out.append({"check_id": cid, "label": AREA_LABELS.get(cid, cid), "status": by_id[cid]["status"]})
+    return out
 
 TOPIC_OWNER_QUESTIONS = [
     (r"water|tanker|borewell|cauvery", "How often does the water supply stop, and does the building use tankers?"),
@@ -58,13 +98,13 @@ def scan_context(report: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str,
     """(facts for the model, numbered sources). Sources are deduplicated by URL."""
     sources: list[dict[str, str]] = []
 
-    def source_no(url: str | None, label: str) -> int | None:
+    def source_no(url: str | None, label: str, check_id: str) -> int | None:
         if not url or not url.startswith("http"):
             return None
         for i, s in enumerate(sources, 1):
             if s["url"] == url:
                 return i
-        sources.append({"label": label, "url": url})
+        sources.append({"label": label, "url": url, "check_id": check_id})
         return len(sources)
 
     checks = []
@@ -72,12 +112,12 @@ def scan_context(report: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str,
         # Findings are passed separately below, so details only need the non-finding lines.
         details = [d[:MAX_DETAIL_CHARS] for d in c.get("details", []) if not d.startswith(("News report", "Official"))]
         item = {"id": c["id"], "status": c["status"], "headline": c["headline"], "details": details[:4]}
-        n = source_no(c.get("source_url"), c["id"].replace("_", " "))
+        n = source_no(c.get("source_url"), AREA_LABELS.get(c["id"], c["id"]), c["id"])
         if n:
             item["source"] = n
         findings = []
         for f in (c.get("findings", []) or [])[:MAX_FINDINGS_PER_CHECK]:
-            fn = source_no(f.get("source_url"), f.get("label") or c["id"])
+            fn = source_no(f.get("source_url"), f.get("label") or c["id"], c["id"])
             findings.append({"label": f.get("label"), "date": f.get("date"), "title": f.get("title"), "source": fn})
         if findings:
             item["findings"] = findings
@@ -132,7 +172,7 @@ async def answer(report: dict[str, Any], question: str) -> dict[str, Any]:
                 "method": "error"}
 
     owner_q = str(reply.get("owner_question") or "").strip() or owner_question_for(question)
-    text = " ".join(str(reply.get("answer") or "").split())
+    text = soften_overclaims(" ".join(str(reply.get("answer") or "").split()))
     if not reply.get("in_scan") or not text:
         return {**not_in_scan(question, []), "owner_question": owner_q}
     if len(text.split()) > ASK_MAX_WORDS + 15 or not numbers_grounded(text, facts_json):
@@ -147,4 +187,4 @@ async def answer(report: dict[str, Any], question: str) -> dict[str, Any]:
             used.append(sources[i - 1])
     # The model's owner question can drift off-topic when it did answer; use the topic list then.
     return {"in_scan": True, "answer": text, "sources": used, "owner_question": owner_question_for(question),
-            "method": "llm"}
+            "check_states": check_states_for(report, used, question), "method": "llm"}
